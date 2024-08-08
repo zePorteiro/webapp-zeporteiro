@@ -1,5 +1,5 @@
-import Links from "../LinksNavbar/index";
-import LoginCadastro from "../btnSignInSignUp/index";
+import Links from "./Links/index";
+import LoginCadastro from "../Buttons/Sign/index";
 import LogoEmpresa from "../Logo/index";
 import { Container } from "./styles";
 

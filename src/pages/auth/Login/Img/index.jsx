@@ -1,4 +1,4 @@
-import Imagem from "../../../assets/imgs/ImagemLogin.svg";
+import Imagem from "../../../../assets/imgs/ImagemLogin.svg";
 import { ImageWrapper, Image } from "./styles";
 
 export default function ImagemLogin() {

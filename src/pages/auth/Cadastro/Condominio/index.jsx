@@ -1,5 +1,5 @@
 import Formulario from "./Form/index";
-import VoltarHome from "../../Login/btnBackHome/index";
+import VoltarHome from "../../../../components/Buttons/BackHome/index";
 import ImagemCadastro from "../Img/index";
 
 import { Main, Container, Header, Titulo, Subtitulo, ImagemContainer } from "./styles";

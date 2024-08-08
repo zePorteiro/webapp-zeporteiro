@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import ModalAdd from "../ModalAp"
 import { IoIosCreate, IoIosTrash, IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 
 import { ContainerWrapper, ContentWrapper, Container, CabecalhoContainer, TituloContainer, Titulo, ButtonContainer, ImageWrapper, StyledImage, AddButton, DadosContainer, LinhaCabecalho, ColunaCabecalho, Linha, Coluna, PaginacaoContainer, NumeroPagina, BotaoSkip } from "./styles";
@@ -70,7 +69,7 @@ export default function TabelaApartamento() {
     );
 }
 
-export default function Cabecalho() {
+function Cabecalho() {
     return (
         <CabecalhoContainer>
             <TituloContainer>
@@ -88,7 +87,7 @@ export default function Cabecalho() {
     );
 }
 
-export default function TabelaDeApartamentos({ apartamentos }) {
+function TabelaDeApartamentos({ apartamentos }) {
     const [linhaSelecionada, setLinhaSelecionada] = useState(null);
 
     const selecionarLinha = (index) => {
@@ -128,7 +127,7 @@ export default function TabelaDeApartamentos({ apartamentos }) {
     );
 }
 
-export default function Paginacao({ totalPaginas, paginaAtual, mudarPagina }) {
+function Paginacao({ totalPaginas, paginaAtual, mudarPagina }) {
     const handleSkipEsquerda = () => {
         mudarPagina(1);
     };

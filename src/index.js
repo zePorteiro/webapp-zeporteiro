@@ -2,11 +2,11 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./home/index";
 import GlobalStyle from "./assets/GlobalStyle";
-import Login from "./pages/Login/index";
-import SobreNos from "./pages/SobreNos/index";
-import Cadastrar from "./pages/Cadastro/index";
-import CadastrarCondominio from "./pages/Cadastro/Condominio/index"
-import ContrateNos from "./pages/Contrate/index";
+import Login from "./pages/auth/Login/index";
+import SobreNos from "./pages/sidePages/SobreNos/index";
+import Cadastrar from "./pages/auth/Cadastro/index";
+import CadastrarCondominio from "./pages/auth/Cadastro/Condominio/index"
+import ContrateNos from "./pages/sidePages/Contrate/index";
 import CadastroEncomendaCliente from "./pages/client/CadastroEncomenda/index"
 import PaginaInicial from "./pages/client/PaginaInicial/index"
 import Estoque from "./pages/client/Estoque/index"

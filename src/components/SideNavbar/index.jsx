@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import Logo from "../../../../components/Logo/index";
+import Logo from "../../components/Logo/index";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 export default function MenuUsuario() {

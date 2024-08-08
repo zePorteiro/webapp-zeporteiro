@@ -1,4 +1,4 @@
-import Imagem from "../../../assets/imgs/ImagemCadastro.svg";
+import Imagem from "../../../../assets/imgs/ImagemCadastro.svg";
 import { Section, Image } from "./styles";
 
 export default function SeçãoPrincipal() {

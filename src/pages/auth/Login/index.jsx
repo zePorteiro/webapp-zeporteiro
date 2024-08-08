@@ -1,4 +1,4 @@
-import Voltar from "./btnBackHome/index";
+import Voltar from "../../../components/Buttons/index";
 import CriarConta from "./TextSignUp/index";
 import ImagemPagina from "./Img/index";
 import Formulario from "./Form/index";

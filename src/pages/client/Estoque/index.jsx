@@ -1,9 +1,9 @@
 import React from "react";
 import Style from "../../../assets/ClientPagesStyles";
-import ListaEncomenda from "./Icons/ListaEncomendas";
+import ListaEncomenda from "./Icons/Icones";
 import MenuLateral from "../../../components/SideNavbar/index";
 import Kpis from "./KPIs";
-import Logo from "../Logo/LogoEmpresa";
+import Logo from "../../../components/Logo/index";
 
 import { Container, Content, LogoContainer, KpisContainer } from "./styles";
 

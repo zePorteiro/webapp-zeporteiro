@@ -3,7 +3,7 @@ import axios from "axios";
 import { Formulario, ErrorPopup, Botao } from "./styles";
 import { CampoInputCadastro, InputCadastro, Label } from "../../Inputs/styles";
 import { useNavigate } from "react-router-dom";
-import { validarCEP, validarNumero, validarPreenchido } from "../../../../utils/formValidation";
+import { validarCEP, validarNumero, validarPreenchido } from "../../../../../utils/formValidation";
 
 export default function PaginaCondominio() {
   const [cep, setCep] = useState("");

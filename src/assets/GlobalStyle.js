@@ -1,3 +1,4 @@
+import '@radix-ui/themes/styles.css';
 import { createGlobalStyle } from "styled-components";
 import Fonts from './Fonts';
 

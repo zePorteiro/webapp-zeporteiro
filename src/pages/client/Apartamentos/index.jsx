@@ -6,19 +6,21 @@ import Logo from "../../../components/Logo/index";
 
 import { Container, Content, LogoContainer, List } from "./styles";
 
-const Apartamentos = () => (
-  <Container>
-    <Style />
-    <MenuLateral />
-    <Content>
-      <LogoContainer>
-        <Logo />
-      </LogoContainer>
-      <List>
-        <ListaApartamentos />
-      </List>
-    </Content>
-  </Container>
-);
+function Apartamentos() {
+  return (
+    <Container>
+      <Style />
+      <MenuLateral />
+      <Content>
+        <LogoContainer>
+          <Logo />
+        </LogoContainer>
+        <List>
+          <ListaApartamentos />
+        </List>
+      </Content>
+    </Container>
+  );
+}
 
 export default Apartamentos;

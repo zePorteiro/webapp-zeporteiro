@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { CampoInputCadastro, InputCadastro, Label } from "../Inputs/styles";
-import { validarEmail, formatarTelefone, validarSenha } from "../../../utils/formValidation";
+import { validarEmail, formatarTelefone, validarSenha } from "../../../../utils/formValidation";
 import { IconeOlho, Formulario, Botao } from "./styles";
 import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
