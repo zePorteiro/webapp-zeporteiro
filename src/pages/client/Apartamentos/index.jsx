@@ -2,9 +2,9 @@ import React from "react";
 import Style from "../../../assets/ClientPagesStyles";
 import ListaApartamentos from "./ListApartamentos/index";
 import MenuLateral from "../../../components/SideNavbar/index";
-import Logo from "../../../components/Logo/index";
+import Titulo from "../../../components/Title/index"
 
-import { Container, Content, LogoContainer, List } from "./styles";
+import { Container, Content, List, TitleDiv } from "./styles";
 
 function Apartamentos() {
   return (
@@ -12,9 +12,9 @@ function Apartamentos() {
       <Style />
       <MenuLateral />
       <Content>
-        <LogoContainer>
-          <Logo />
-        </LogoContainer>
+        <TitleDiv>
+          <Titulo texto="Apartamentos" />
+        </TitleDiv>
         <List>
           <ListaApartamentos />
         </List>

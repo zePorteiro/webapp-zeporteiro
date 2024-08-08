@@ -26,12 +26,19 @@ export const Content = styled.div`
   }
 `;
 
-export const LogoContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 5vh;
+export const TitleDiv = styled.div`
+  background-color: none;
+  padding: 20px;
+  margin: 0px 0px 0px 0px;
+
+  h2 {
+    color: #333; 
+    font-size: 24px; 
+    margin: 0; 
+  }
 `;
 
 export const ListaContainer = styled.div`
-  padding: 40px;
+  padding: 20px;
+  margin-top: -3vh;
 `;
