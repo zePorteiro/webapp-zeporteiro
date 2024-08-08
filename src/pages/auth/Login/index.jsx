@@ -1,7 +1,7 @@
 import Voltar from "../../../components/Buttons/BackHome/index";
 import CriarConta from "./TextSignUp/index";
 import ImagemPagina from "./Img/index";
-import Formulario from "./Form/index";
+import Formulario from "../Login/Form/index";
 import { Main, VoltarWrapper, Section, HeaderContainer, HeaderDescription, HeaderTitle, ContentWrapper, CriarContaWrapper, ImagemWrapper } from "./styles";
 
 export default function PaginaLogin() {
