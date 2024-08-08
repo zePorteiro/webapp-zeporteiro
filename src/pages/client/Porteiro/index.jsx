@@ -4,10 +4,10 @@ import ListaPorteiros from "./ListPorteiros/index";
 import MenuLateral from "../../../components/SideNavbar/index";
 import Logo from "../../../components/Logo/index";
 
-import { Container, Content, LogoContainer, ListaContainer, Container } from "./styles";
+import { Section, Content, LogoContainer, ListaContainer } from "./styles";
 
 const Porteiros = () => (
-  <Container>
+  <Section>
     <Style />
     <MenuLateral />
     <Content>
@@ -18,7 +18,7 @@ const Porteiros = () => (
         <ListaPorteiros />
       </ListaContainer>
     </Content>
-  </Container>
+  </Section>
 );
 
 export default Porteiros;

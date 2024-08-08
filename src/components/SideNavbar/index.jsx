@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-
 import Logo from "../../components/Logo/index";
 import { FaBars, FaTimes } from "react-icons/fa";
+import { PageContainer, Sidebar, Imagem, Links, Link, HamburgerMenu } from "./styles";
 
 export default function MenuUsuario() {
   const [menuOpen, setMenuOpen] = useState(false);

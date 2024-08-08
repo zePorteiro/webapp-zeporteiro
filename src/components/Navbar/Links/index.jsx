@@ -3,7 +3,7 @@ import { Container, Links, LinkText, ListItem } from "./styles";
 const textosOpcoes = ["Página inicial", "Sobre nós", "Contrate"];
 const links = ["/", "/sobrenos", "/contrate"];
 
-function Navbar() {
+export default function Navbar() {
   return (
     <Container>
       <Links>
@@ -18,5 +18,3 @@ function Navbar() {
     </Container>
   );
 }
-
-export default Navbar;

@@ -1,4 +1,4 @@
-import ImagemPage from "../../../assets/imgs/Casal.svg";
+import ImagemPage from "../../../../assets/imgs/Casal.svg";
 import { Container, Image } from "./styles";
 
 export default function Imagem() {

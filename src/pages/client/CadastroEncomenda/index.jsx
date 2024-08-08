@@ -1,3 +1,4 @@
+import Style from "../../../assets/ClientPagesStyles"
 import Sidebar from "../../../components/SideNavbar/index";
 import Logo from "../../../components/Logo";
 import FormSignUp from "./Forms/index";

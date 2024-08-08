@@ -1,12 +1,12 @@
 import Links from "./Links/index";
 import LoginCadastro from "../Buttons/Sign/index";
-import LogoEmpresa from "../Logo/index";
+import LogoZePorteiro from "../Logo/index";
 import { Container } from "./styles";
 
 export default function Navigation() {
   return (
     <Container>
-      <LogoEmpresa />
+      <LogoZePorteiro />
         <Links />
         <LoginCadastro />
     </Container>

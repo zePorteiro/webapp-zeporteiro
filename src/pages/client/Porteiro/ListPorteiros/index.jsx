@@ -1,6 +1,28 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+
+import {
+  ContainerWrapper,
+  ContentWrapper,
+  Container,
+  CabecalhoContainer,
+  TituloContainer,
+  Titulo,
+  ButtonContainer,
+  ImageWrapper,
+  StyledImage,
+  AddButton,
+  AddCsvButton,
+  DadosContainer,
+  LinhaCabecalho,
+  ColunaCabecalho,
+  Linha,
+  Coluna,
+  PaginacaoContainer,
+  NumeroPagina,
+  BotaoSkip
+} from "./styles";
 
 function TabelaPorteiro() {
   const [porteiros, setPorteiros] = useState([]);
@@ -68,21 +90,17 @@ function Cabecalho() {
         <Titulo>Porteiros</Titulo>
       </TituloContainer>
       <ButtonContainer>
-      <ImageWrapper>
-        <StyledImage
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/8156a6a6eae06084f8a1efcbad5dddf49aa3c449142c963fe9e5efa1453377c0?apiKey=47f1cd04243243c1a2a2819ee899bf9a&"
-        />
-      </ImageWrapper>
-      <AddButton>Adicionar</AddButton>
-    </ButtonContainer>
-    <ButtonContainer>
-      <ImageWrapper>
-        <StyledImage
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/8156a6a6eae06084f8a1efcbad5dddf49aa3c449142c963fe9e5efa1453377c0?apiKey=47f1cd04243243c1a2a2819ee899bf9a&"
-        />
-      </ImageWrapper>
-      <AddCsvButton>Adicionar com CSV</AddCsvButton>
-    </ButtonContainer>
+        <ImageWrapper>
+          <StyledImage src="https://cdn.builder.io/api/v1/image/assets/TEMP/8156a6a6eae06084f8a1efcbad5dddf49aa3c449142c963fe9e5efa1453377c0?apiKey=47f1cd04243243c1a2a2819ee899bf9a&" />
+        </ImageWrapper>
+        <AddButton>Adicionar</AddButton>
+      </ButtonContainer>
+      <ButtonContainer>
+        <ImageWrapper>
+          <StyledImage src="https://cdn.builder.io/api/v1/image/assets/TEMP/8156a6a6eae06084f8a1efcbad5dddf49aa3c449142c963fe9e5efa1453377c0?apiKey=47f1cd04243243c1a2a2819ee899bf9a&" />
+        </ImageWrapper>
+        <AddCsvButton>Adicionar com CSV</AddCsvButton>
+      </ButtonContainer>
     </CabecalhoContainer>
   );
 }
@@ -95,29 +113,29 @@ function TabelaDePorteiros({ porteiros }) {
   };
   return (
     <DadosContainer>
-  <LinhaCabecalho>
-    <ColunaCabecalho>ID</ColunaCabecalho>
-    <ColunaCabecalho>Nome do Porteiro</ColunaCabecalho>
-    <ColunaCabecalho>Email</ColunaCabecalho>
-    <ColunaCabecalho>Turno</ColunaCabecalho>
-    <ColunaCabecalho>RG</ColunaCabecalho>
-    <ColunaCabecalho>Telefone</ColunaCabecalho>
-  </LinhaCabecalho>
-  {porteiros.map((porteiros, index) => (
-    <Linha
-      key={index}
-      onClick={() => selecionarLinha(index)}
-      selecionada={linhaSelecionada === index}
-    >
-      <Coluna>{porteiros.id}</Coluna>
-      <Coluna>{porteiros.nome}</Coluna>
-      <Coluna>{porteiros.email}</Coluna>
-      <Coluna>{porteiros.turno}</Coluna>
-      <Coluna>{porteiros.rg}</Coluna>
-      <Coluna>{porteiros.telefone}</Coluna>
-    </Linha>
-  ))}
-</DadosContainer>
+      <LinhaCabecalho>
+        <ColunaCabecalho>ID</ColunaCabecalho>
+        <ColunaCabecalho>Nome do Porteiro</ColunaCabecalho>
+        <ColunaCabecalho>Email</ColunaCabecalho>
+        <ColunaCabecalho>Turno</ColunaCabecalho>
+        <ColunaCabecalho>RG</ColunaCabecalho>
+        <ColunaCabecalho>Telefone</ColunaCabecalho>
+      </LinhaCabecalho>
+      {porteiros.map((porteiros, index) => (
+        <Linha
+          key={index}
+          onClick={() => selecionarLinha(index)}
+          selecionada={linhaSelecionada === index}
+        >
+          <Coluna>{porteiros.id}</Coluna>
+          <Coluna>{porteiros.nome}</Coluna>
+          <Coluna>{porteiros.email}</Coluna>
+          <Coluna>{porteiros.turno}</Coluna>
+          <Coluna>{porteiros.rg}</Coluna>
+          <Coluna>{porteiros.telefone}</Coluna>
+        </Linha>
+      ))}
+    </DadosContainer>
   );
 }
 
@@ -134,14 +152,15 @@ function Paginacao({ totalPaginas, paginaAtual, mudarPagina }) {
     mudarPagina(numero);
   };
 
-
   let inicio = Math.max(1, paginaAtual - 2);
   let fim = Math.min(totalPaginas, inicio + 4);
   inicio = Math.max(1, fim - 4);
 
   return (
     <PaginacaoContainer>
-      <BotaoSkip onClick={handleSkipEsquerda}><IoIosArrowBack /></BotaoSkip>
+      <BotaoSkip onClick={handleSkipEsquerda}>
+        <IoIosArrowBack />
+      </BotaoSkip>
       {[...Array(fim - inicio + 1).keys()].map((offset) => {
         const numeroPagina = inicio + offset;
         return (
@@ -154,7 +173,9 @@ function Paginacao({ totalPaginas, paginaAtual, mudarPagina }) {
           </NumeroPagina>
         );
       })}
-      <BotaoSkip onClick={handleSkipDireita}><IoIosArrowForward /></BotaoSkip>
+      <BotaoSkip onClick={handleSkipDireita}>
+        <IoIosArrowForward />
+      </BotaoSkip>
     </PaginacaoContainer>
   );
 }

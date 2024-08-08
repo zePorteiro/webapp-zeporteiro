@@ -33,7 +33,6 @@ export const Sidebar = styled.div`
     transition: none;
   }
 
-  /* Aplica a margem superior apenas quando o menu está aberto */
   ${({ menuOpen }) =>
     menuOpen &&
     `

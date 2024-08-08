@@ -34,7 +34,6 @@ ReactDOM.createRoot(root).render(
         <Route path="/estoque" element={<Estoque />} />
         <Route path="/apartamentos" element={<Apartamentos />} />
         <Route path="/porteiros" element={<Porteiro />} />
-        <Route path="/teste" element={<TelaDeTestes />} />
       </Routes>
     </Router>
   </React.StrictMode>
