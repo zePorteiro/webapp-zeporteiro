@@ -5,7 +5,7 @@ const Logo = () => {
   return (
     <LogoEmpresa>
       <img src={logotipo}
-        alt="Logo da empresa é um desenho de uma mão segurando uma caixa na cor verde escuro"
+        alt="Logo do Zé Porteiro"
       />
     </LogoEmpresa>
   );
