@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Logo from "../../components/Logo/index";
+import Logo from "../../assets/imgs/LogoPadrao.svg";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { PageContainer, Sidebar, Imagem, Links, Link, HamburgerMenu } from "./styles";
 
@@ -16,7 +16,7 @@ export default function MenuUsuario() {
         {menuOpen ? <FaTimes size={30} color="white" /> : <FaBars size={30} color="white" />}
       </HamburgerMenu>
       <Sidebar menuOpen={menuOpen}>
-        <Imagem src={Logo} alt="Logo da empresa Zé Porteiro" />
+        <Imagem src={Logo} alt="Logo do Zé Porteiro" />
         <Links menuOpen={menuOpen}>
           <Link onClick={() => window.location.href = '/pagina-inicial'}>
             Página Inicial
