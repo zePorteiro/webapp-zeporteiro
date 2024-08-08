@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { CampoInputCadastro, InputCadastro, Label } from "../Inputs/styles";
 import { validarEmail, formatarTelefone, validarSenha } from "../../../../utils/formValidation";
-import { IconeOlho, Formulario, Botao } from "./styles";
+import { Formulario, Botao } from "./styles";
+import IconButton from "@mui/material/IconButton";
 import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -168,9 +169,7 @@ export default function FormularioCadastro() {
               value={senha}
               onChange={handleChangeSenha}
             />
-            <IconeOlho
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/35bfc57b8777953e994bba70018953c83690144f7fa401fe5e368b66c2a0a905?apiKey=47f1cd04243243c1a2a2819ee899bf9a&"
-              alt="Mostrar Senha"
+            <IconButton
               onClick={toggleMostrarSenha}
             />
           </div>
