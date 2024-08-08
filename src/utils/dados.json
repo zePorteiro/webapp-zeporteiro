@@ -1,0 +1,27 @@
+[
+    {
+      "id": 1,
+      "nome": "John Doe",
+      "email": "john.doe@example.com",
+      "turno": "Manhã",
+      "RG": "12345678",
+      "telefoneCelular": "+55 12 34567-8910"
+    },
+    {
+      "id": 2,
+      "nome": "Jane Smith",
+      "email": "jane.smith@example.com",
+      "turno": "Tarde",
+      "RG": "23456789",
+      "telefoneCelular": "+55 98 76543-2109"
+    },
+    {
+      "id": 3,
+      "nome": "Alice Johnson",
+      "email": "alice.johnson@example.com",
+      "turno": "Noite",
+      "RG": "34567890",
+      "telefoneCelular": "+55 56 78901-2345"
+    }
+  ]
+  
