@@ -1,6 +1,6 @@
 import React from "react";
 import Style from "../../../assets/ClientPagesStyles";
-import ListaEncomenda from "./Icons/Icones";
+import ListaEncomenda from "./ListEncomendas/index";
 import MenuLateral from "../../../components/SideNavbar/index";
 import Kpis from "./KPIs";
 import Logo from "../../../components/Logo/index";
