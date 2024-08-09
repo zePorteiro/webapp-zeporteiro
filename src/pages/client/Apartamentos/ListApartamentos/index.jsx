@@ -21,7 +21,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import Dados from "../../../../utils/dados.json";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 

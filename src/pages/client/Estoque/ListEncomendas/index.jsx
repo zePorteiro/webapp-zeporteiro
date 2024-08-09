@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import axios from 'axios';
 import dayjs from 'dayjs';
 import {
   MRT_EditActionButtons,
@@ -22,7 +23,6 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import Dados from '../../../../utils/dados.json'
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -123,20 +123,20 @@ const TableApartamentos = () => {
 
   //call CREATE hook
   const { mutateAsync: createUser, isPending: isCreatingUser } =
-    useCreateUser();
+    useCreateEntrega();
   //call READ hook
   const {
     data: fetchedUsers = [],
     isError: isLoadingUsersError,
     isFetching: isFetchingUsers,
     isLoading: isLoadingUsers,
-  } = useGetUsers();
+  } = useGetEntregas();
   //call UPDATE hook
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
-    useUpdateUser();
+    useUpdateEntrega();
   //call DELETE hook
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
-    useDeleteUser();
+    useDeleteEntrega();
 
   //CREATE action
   const handleCreateUser = async ({ values, table }) => {
@@ -237,13 +237,7 @@ const TableApartamentos = () => {
       <Button
         variant="contained"
         onClick={() => {
-          table.setCreatingRow(true); //simplest way to open the create row modal with no default values
-          //or you can pass in a row object to set default values with the `createRow` helper function
-          // table.setCreatingRow(
-          //   createRow(table, {
-          //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
-          //   }),
-          // );
+          table.setCreatingRow(true); 
         }}
       >
         Cadastrar Encomenda
@@ -261,78 +255,157 @@ const TableApartamentos = () => {
 };
 
 //CREATE hook (post new user to api)
-function useCreateUser() {
+function useCreateEntrega() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (user) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+    mutationFn: async (encomenda) => {
+      try {
+        const response = await axios.post('http://localhost:8080/entregas', encomenda, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Erro ao salvar encomenda:', error.response ? error.response.data : error.message);
+        throw error; 
+      }
     },
-    //client side optimistic update
-    onMutate: (newUserInfo) => {
-      queryClient.setQueryData(['users'], (prevUsers) => [
-        ...prevUsers,
+    onMutate: async (newEncomenda) => {
+      await queryClient.cancelQueries(['entregas']); 
+
+      const previousEntregas = queryClient.getQueryData(['entregas']) || []; 
+
+      queryClient.setQueryData(['entregas'], (prevEntregas) => [
+        ...prevEntregas,
         {
-          ...newUserInfo,
-          id: (Math.random() + 1).toString(36).substring(7),
+          ...newEncomenda,
+          id: (Math.random() + 1).toString(36).substring(7), 
         },
       ]);
+
+      return { previousEntregas };
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => {
+      queryClient.invalidateQueries(['entregas']); 
+    },
+    onError: (error, newEncomenda, context) => {
+      if (context?.previousEntregas) {
+        queryClient.setQueryData(['entregas'], context.previousEntregas); 
+      }
+    },
   });
 }
 
 //READ hook (get users from api)
-function useGetUsers() {
+function useGetEntregas() {
   return useQuery({
-    queryKey: ['users'],
+    queryKey: ['entregas'],
     queryFn: async () => {
-      //send api request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve(Dados);
+      try {
+        const response = await axios.get('http://localhost:8080/entregas', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Erro ao obter dados:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        throw error;
+      }
     },
     refetchOnWindowFocus: false,
   });
 }
 
 //UPDATE hook (put user in api)
-function useUpdateUser() {
+function useUpdateEntrega() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (user) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+    mutationFn: async (entrega) => {
+      try {
+        const response = await axios.put(
+          `http://localhost:8080/entregas/${entrega.id}`,
+          entrega,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('authToken')}`, 
+            },
+          }
+        );
+        return response.data;
+      } catch (error) {
+        console.error('Erro ao atualizar entrega:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        throw error; 
+      }
     },
-    //client side optimistic update
-    onMutate: (newUserInfo) => {
-      queryClient.setQueryData(['users'], (prevUsers) =>
-        prevUsers?.map((prevUser) =>
-          prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
-        ),
+    onMutate: async (updatedEntrega) => {
+      await queryClient.cancelQueries(['entregas']);
+      const previousEntregas = queryClient.getQueryData(['entregas']) || [];
+      queryClient.setQueryData(
+        ['entregas'],
+        previousEntregas.map((entrega) =>
+          entrega.id === updatedEntrega.id ? updatedEntrega : entrega
+        )
       );
+      return { previousEntregas }; 
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => {
+      queryClient.invalidateQueries(['entregas']); 
+    },
+    onError: (error, updatedEntrega, context) => {
+      queryClient.setQueryData(['entregas'], context.previousEntregas); 
+    },
   });
 }
 
 //DELETE hook (delete user in api)
-function useDeleteUser() {
+function useDeleteEntrega() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (userId) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+    mutationFn: async (entregaId) => {
+      try {
+        await axios.delete(`http://localhost:8080/entregas/${entregaId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`, 
+          },
+        });
+        return;
+      } catch (error) {
+        console.error('Erro ao excluir entrega:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        throw error;
+      }
     },
-    //client side optimistic update
-    onMutate: (userId) => {
-      queryClient.setQueryData(['users'], (prevUsers) =>
-        prevUsers?.filter((user) => user.id !== userId),
+    onMutate: async (entregaId) => {
+      await queryClient.cancelQueries(['entregas']);
+      const previousEntregas = queryClient.getQueryData(['entregas']) || [];
+      queryClient.setQueryData(
+        ['entregas'],
+        previousEntregas.filter((entrega) => entrega.id !== entregaId)
       );
+      return { previousEntregas }; 
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => {
+      queryClient.invalidateQueries(['entregas']); 
+    },
+    onError: (error, entregaId, context) => {
+      queryClient.setQueryData(['entregas'], context.previousEntregas); 
+    },
   });
 }
 

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useMemo, useState } from 'react';
 import {
   MRT_EditActionButtons,
@@ -20,7 +21,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-} from '@tanstack/react-query';
+} from "@tanstack/react-query";
 import Dados from '../../../../utils/dados.json'
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -116,13 +117,13 @@ const TablePorteiros = () => {
     isError: isLoadingUsersError,
     isFetching: isFetchingUsers,
     isLoading: isLoadingUsers,
-  } = useGetUsers();
+  } = useGetPorteiros();
   //call UPDATE hook
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
-    useUpdateUser();
+    useUpdatePorteiro();
   //call DELETE hook
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
-    useDeleteUser();
+    useDeletePorteiro();
 
   //CREATE action
   const handleCreateUser = async ({ values, table }) => {
@@ -249,76 +250,142 @@ const TablePorteiros = () => {
 //CREATE hook (post new user to api)
 function useCreateUser() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (user) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      try {
+        const response = await axios.post('http://localhost:8080/porteiros', user, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Erro ao criar usuário:', error.response ? error.response.data : error.message);
+        throw error;
+      }
     },
-    //client side optimistic update
-    onMutate: (newUserInfo) => {
-      queryClient.setQueryData(['users'], (prevUsers) => [
-        ...prevUsers,
-        {
-          ...newUserInfo,
-          id: (Math.random() + 1).toString(36).substring(7),
-        },
-      ]);
+    onMutate: async (newUser) => {
+      await queryClient.cancelQueries(['users']);
+      const previousUsers = queryClient.getQueryData(['users']) || [];
+
+      // Atualiza o cache de maneira otimista
+      queryClient.setQueryData(['users'], [...previousUsers, newUser]);
+
+      return { previousUsers };
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => {
+      queryClient.invalidateQueries(['users']);
+    },
+    onError: (error, newUser, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(['users'], context.previousUsers);
+      }
+    },
   });
 }
 
 //READ hook (get users from api)
-function useGetUsers() {
+function useGetPorteiros() {
   return useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      //send api request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve(Dados);
+      try {
+        const response = await axios.get('http://localhost:8080/porteiros', {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        return response.data; // Retorna os dados dos usuários obtidos da API
+      } catch (error) {
+        console.error('Erro ao buscar usuários:', error.response ? error.response.data : error.message);
+        throw error;
+      }
     },
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: false, // Não refaz a consulta quando a janela ganha foco
   });
 }
 
 //UPDATE hook (put user in api)
-function useUpdateUser() {
+function useUpdatePorteiro() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (user) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      try {
+        const response = await axios.put(`http://localhost:8080/porteiros/${user.id}`, user, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Erro ao atualizar usuário:', error.response ? error.response.data : error.message);
+        throw error;
+      }
     },
-    //client side optimistic update
+    // Atualização otimista do cache
     onMutate: (newUserInfo) => {
+      const previousUsers = queryClient.getQueryData(['users']) || [];
+
       queryClient.setQueryData(['users'], (prevUsers) =>
-        prevUsers?.map((prevUser) =>
-          prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
-        ),
+        prevUsers.map((prevUser) =>
+          prevUser.id === newUserInfo.id ? { ...prevUser, ...newUserInfo } : prevUser
+        )
       );
+
+      return { previousUsers };
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    // Reverte o cache em caso de erro
+    onError: (error, newUserInfo, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(['users'], context.previousUsers);
+      }
+    },
+    // Refetch users after mutation to ensure data consistency
+    onSettled: () => {
+      queryClient.invalidateQueries(['users']);
+    },
   });
 }
 
 //DELETE hook (delete user in api)
-function useDeleteUser() {
+function useDeletePorteiro() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (userId) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      try {
+        await axios.delete(`http://localhost:8080/porteiros/${userId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+      } catch (error) {
+        console.error('Erro ao deletar usuário:', error.response ? error.response.data : error.message);
+        throw error;
+      }
     },
-    //client side optimistic update
+    // Atualização otimista do cache
     onMutate: (userId) => {
+      const previousUsers = queryClient.getQueryData(['users']) || [];
+
       queryClient.setQueryData(['users'], (prevUsers) =>
-        prevUsers?.filter((user) => user.id !== userId),
+        prevUsers.filter((user) => user.id !== userId)
       );
+
+      return { previousUsers };
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    // Reverte o cache em caso de erro
+    onError: (error, userId, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(['users'], context.previousUsers);
+      }
+    },
+    // Refetch users after mutation to ensure data consistency
+    onSettled: () => {
+      queryClient.invalidateQueries(['users']);
+    },
   });
 }
 
