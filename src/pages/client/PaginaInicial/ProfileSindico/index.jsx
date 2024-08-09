@@ -1,15 +1,37 @@
-import React, { useState } from "react";
-import ListGroup from "react-bootstrap/ListGroup";
-import Button from "react-bootstrap/Button";
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Button, ListGroup } from 'react-bootstrap';
 
 function InfosSindico() {
-  const [nomeCompleto, setNomeCompleto] = useState("Fulano de Tal");
-  const [documentoIdentidade, setDocumentoIdentidade] = useState("123456789");
-  const [telefoneCelular, setTelefoneCelular] = useState("(11) 91234-5678");
+  const [nomeCompleto, setNomeCompleto] = useState("");
+  const [documentoIdentidade, setDocumentoIdentidade] = useState("");
+  const [telefoneCelular, setTelefoneCelular] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
-  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Função para carregar os dados do síndico
+  const fetchSindicoData = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/clientes');
+      const { nomeCompleto, documentoIdentidade, telefoneCelular } = response.data;
+
+      setNomeCompleto(nomeCompleto);
+      setDocumentoIdentidade(documentoIdentidade);
+      setTelefoneCelular(telefoneCelular);
+    } catch (error) {
+      setError('Erro ao carregar os dados do síndico');
+      console.error('Erro ao carregar os dados do síndico:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSindicoData();
+  }, []);
+
   const handleSave = async () => {
     const updatedData = {
       nomeCompleto,
@@ -19,14 +41,15 @@ function InfosSindico() {
 
     try {
       const response = await axios.put('http://sua-api.com/sindico', updatedData);
-
       console.log('HTTP Status:', response.status);
-
       setIsEditing(false);
     } catch (error) {
       console.error('Erro ao atualizar os dados do síndico:', error.message);
     }
   };
+
+  if (loading) return <p>Carregando...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <>
