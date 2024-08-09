@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
+import axios from "axios";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
-  // createRow,
   useMaterialReactTable,
-} from 'material-react-table';
+} from "material-react-table";
 import {
   Box,
   Button,
@@ -13,32 +13,34 @@ import {
   DialogTitle,
   IconButton,
   Tooltip,
-} from '@mui/material';
+} from "@mui/material";
 import {
   QueryClient,
   QueryClientProvider,
   useMutation,
   useQuery,
   useQueryClient,
-} from '@tanstack/react-query';
-import Dados from '../../../../utils/dados.json'
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+} from "@tanstack/react-query";
+import Dados from "../../../../utils/dados.json";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const TableApartamentos = () => {
   const [validationErrors, setValidationErrors] = useState({});
 
+  const { mutateAsync: createApartamentos, isPending: isCreatingApartamentos } = useCreateUser();
+
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'numeroAp',
-        header: 'Apartamento',
+        accessorKey: "numeroAp",
+        header: "Apartamento",
         enableEditing: true,
         size: 80,
       },
       {
-        accessorKey: 'nome',
-        header: 'Nome do Morador',
+        accessorKey: "nome",
+        header: "Nome do Morador",
         muiEditTextFieldProps: {
           required: true,
           error: !!validationErrors?.nome,
@@ -53,10 +55,10 @@ const TableApartamentos = () => {
         },
       },
       {
-        accessorKey: 'email',
-        header: 'Email',
+        accessorKey: "email",
+        header: "Email",
         muiEditTextFieldProps: {
-          type: 'email',
+          type: "email",
           required: true,
           error: !!validationErrors?.email,
           helperText: validationErrors?.email,
@@ -69,8 +71,8 @@ const TableApartamentos = () => {
         },
       },
       {
-        accessorKey: 'bloco',
-        header: 'Bloco',
+        accessorKey: "bloco",
+        header: "Bloco",
         muiEditTextFieldProps: {
           required: false,
           error: !!validationErrors?.bloco,
@@ -85,14 +87,14 @@ const TableApartamentos = () => {
         },
       },
       {
-        accessorKey: 'telefoneCelular',
-        header: 'Telefone Celular',
+        accessorKey: "telefoneCelular",
+        header: "Telefone Celular",
         muiEditTextFieldProps: {
           required: true,
-          type: 'tel',
+          type: "tel",
           inputProps: {
-            inputMode: 'numeric',
-            pattern: '[0-9]*',
+            inputMode: "numeric",
+            pattern: "[0-9]*",
           },
           error: !!validationErrors?.telefoneCelular,
           helperText: validationErrors?.telefoneCelular,
@@ -105,14 +107,14 @@ const TableApartamentos = () => {
         },
       },
       {
-      accessorKey: 'telefoneFixo',
-        header: 'Telefone Fixo',
+        accessorKey: "telefoneFixo",
+        header: "Telefone Fixo",
         muiEditTextFieldProps: {
           required: false,
-          type: 'tel',
+          type: "tel",
           inputProps: {
-            inputMode: 'numeric',
-            pattern: '[0-9]*',
+            inputMode: "numeric",
+            pattern: "[0-9]*",
           },
           error: !!validationErrors?.telefoneFixo,
           helperText: validationErrors?.telefoneFixo,
@@ -123,10 +125,20 @@ const TableApartamentos = () => {
               telefoneFixo: undefined,
             }),
         },
-      },      
+      },
     ],
-    [validationErrors],
+    [validationErrors]
   );
+
+  // Função para lidar com a criação de apartamentos
+  const handleCreateApartamentos = async ({ values, table }) => {
+    try {
+      await createApartamentos(values); // Envie a lista de apartamentos
+      table.setCreatingRow(null); // Saia do modo de criação
+    } catch (error) {
+      console.error('Erro ao criar apartamentos:', error);
+    }
+  };
 
   //call CREATE hook
   const { mutateAsync: createUser, isPending: isCreatingUser } =
@@ -171,7 +183,7 @@ const TableApartamentos = () => {
 
   //DELETE action
   const openDeleteConfirmModal = (row) => {
-    if (window.confirm('Tem certeza que deseja excluir esse usuário?')) {
+    if (window.confirm("Tem certeza que deseja excluir esse usuário?")) {
       deleteUser(row.original.id);
     }
   };
@@ -179,19 +191,19 @@ const TableApartamentos = () => {
   const table = useMaterialReactTable({
     columns,
     data: fetchedUsers,
-    createDisplayMode: 'modal', //default ('row', and 'custom' are also available)
-    editDisplayMode: 'modal', //default ('row', 'cell', 'table', and 'custom' are also available)
+    createDisplayMode: "modal", //default ('row', and 'custom' are also available)
+    editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
     enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? {
-        color: 'error',
-        children: 'Error loading data',
+        color: "error",
+        children: "Error loading data",
       }
       : undefined,
     muiTableContainerProps: {
       sx: {
-        minHeight: '500px',
+        minHeight: "500px",
       },
     },
     onCreatingRowCancel: () => setValidationErrors({}),
@@ -203,7 +215,7 @@ const TableApartamentos = () => {
       <>
         <DialogTitle variant="h3">Adicionar Apartamento</DialogTitle>
         <DialogContent
-          sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+          sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
           {internalEditComponents} {/* or render custom edit components here */}
         </DialogContent>
@@ -217,7 +229,7 @@ const TableApartamentos = () => {
       <>
         <DialogTitle variant="h3">Editar Apartamento</DialogTitle>
         <DialogContent
-          sx={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+          sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
           {internalEditComponents} {/* or render custom edit components here */}
         </DialogContent>
@@ -227,7 +239,7 @@ const TableApartamentos = () => {
       </>
     ),
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: 'flex', gap: '1rem' }}>
+      <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
@@ -270,34 +282,65 @@ const TableApartamentos = () => {
 //CREATE hook (post new user to api)
 function useCreateUser() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (user) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+    mutationFn: async (apartamentos) => {
+      try {
+        const response = await axios.post('http://localhost:8080/apartamentos', apartamentos, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Erro ao criar apartamentos:', error.response ? error.response.data : error.message);
+        throw error;
+      }
     },
-    //client side optimistic update
-    onMutate: (newUserInfo) => {
-      queryClient.setQueryData(['users'], (prevUsers) => [
-        ...prevUsers,
-        {
-          ...newUserInfo,
-          id: (Math.random() + 1).toString(36).substring(7),
-        },
-      ]);
+    onMutate: async (newApartamentos) => {
+      await queryClient.cancelQueries(['users']);
+      const previousUsers = queryClient.getQueryData(['users']) || [];
+      
+      // Verifica se newApartamentos é um array
+      if (Array.isArray(newApartamentos)) {
+        queryClient.setQueryData(['users'], [...previousUsers, ...newApartamentos]);
+      } else {
+        console.error('newApartamentos não é um array:', newApartamentos);
+      }
+
+      return { previousUsers };
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => {
+      queryClient.invalidateQueries(['users']);
+    },
+    onError: (error, newApartamentos, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(['users'], context.previousUsers);
+      }
+    },
   });
 }
 
 //READ hook (get users from api)
 function useGetUsers() {
   return useQuery({
-    queryKey: ['users'],
+    queryKey: ["users"],
     queryFn: async () => {
-      //send api request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve(Dados);
+      try {
+        const response = await axios.get("http://localhost:8080/apartamentos", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        return response.data;
+      } catch (error) {
+        console.error("Erro ao obter dados:", {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        throw error;
+      }
     },
     refetchOnWindowFocus: false,
   });
@@ -306,40 +349,88 @@ function useGetUsers() {
 //UPDATE hook (put user in api)
 function useUpdateUser() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (user) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      try {
+        // Realiza a requisição PUT à API para atualizar o usuário
+        const response = await axios.put(
+          `http://localhost:8080/apartamentos/${user.id}`,
+          user,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Inclua o token se a API precisar de autenticação
+            },
+          }
+        );
+        return response.data; // Retorna os dados atualizados da API
+      } catch (error) {
+        console.error("Erro ao atualizar usuário:", {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        throw error; // Lança o erro para ser tratado pelo React Query
+      }
     },
-    //client side optimistic update
-    onMutate: (newUserInfo) => {
-      queryClient.setQueryData(['users'], (prevUsers) =>
-        prevUsers?.map((prevUser) =>
-          prevUser.id === newUserInfo.id ? newUserInfo : prevUser,
-        ),
+    onMutate: async (updatedUser) => {
+      await queryClient.cancelQueries(["users"]);
+      const previousUsers = queryClient.getQueryData(["users"]) || [];
+      queryClient.setQueryData(
+        ["users"],
+        previousUsers.map((user) =>
+          user.id === updatedUser.id ? updatedUser : user
+        )
       );
+      return { previousUsers }; // Retorna o estado anterior para possível rollback
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => {
+      queryClient.invalidateQueries(["users"]); // Refaz a requisição para garantir que os dados estejam atualizados
+    },
+    onError: (error, updatedUser, context) => {
+      queryClient.setQueryData(["users"], context.previousUsers); // Restaura o estado anterior em caso de erro
+    },
   });
 }
 
 //DELETE hook (delete user in api)
 function useDeleteUser() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (userId) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      try {
+        // Realiza a requisição DELETE à API para excluir o usuário
+        await axios.delete(`http://localhost:8080/apartamentos/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Inclua o token se a API precisar de autenticação
+          },
+        });
+        return; // Apenas resolve sem dados, pois a exclusão não retorna um corpo
+      } catch (error) {
+        console.error("Erro ao excluir usuário:", {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        throw error; // Lança o erro para ser tratado pelo React Query
+      }
     },
-    //client side optimistic update
-    onMutate: (userId) => {
-      queryClient.setQueryData(['users'], (prevUsers) =>
-        prevUsers?.filter((user) => user.id !== userId),
+    onMutate: async (userId) => {
+      await queryClient.cancelQueries(["users"]);
+      const previousUsers = queryClient.getQueryData(["users"]) || [];
+      queryClient.setQueryData(
+        ["users"],
+        previousUsers.filter((user) => user.id !== userId)
       );
+      return { previousUsers }; // Retorna o estado anterior para possível rollback
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => {
+      queryClient.invalidateQueries(["users"]); // Refaz a requisição para garantir que os dados estejam atualizados
+    },
+    onError: (error, userId, context) => {
+      queryClient.setQueryData(["users"], context.previousUsers); // Restaura o estado anterior em caso de erro
+    },
   });
 }
 
@@ -360,38 +451,34 @@ const validateEmail = (email) =>
   email
     .toLowerCase()
     .match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     );
 const validatePhoneNumber = (phoneNumber) =>
-  !!phoneNumber.length &&
-  phoneNumber.match(
-    /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/,
-  );
+  !!phoneNumber.length && phoneNumber.match(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/);
 
-  function validateUser(user) {
-    const errors = {};
-  
-    // Validação do nome
-    if (!validateRequired(user.nome)) {
-      errors.nome = 'Preencha o campo obrigatório';
-    }
-  
-    // Validação do email
-    if (!validateRequired(user.email)) {
-      errors.email = 'Preencha o campo obrigatório';
-    } else if (!validateEmail(user.email)) {
-      errors.email = 'Email não está no formato correto';
-      console.log('Erro de validação: Formato de email inválido');
-    }
-  
-    // Validação do telefone celular
-    if (!validateRequired(user.telefoneCelular)) {
-      errors.telefoneCelular = 'Preencha o campo obrigatório';
-    } else if (!validatePhoneNumber(user.telefoneCelular)) {
-      errors.telefoneCelular = 'Telefone celular não está no formato correto';
-      console.log('Erro de validação: Formato de telefone celular inválido');
-    }
-  
-    return errors;
+function validateUser(user) {
+  const errors = {};
+
+  // Validação do nome
+  if (!validateRequired(user.nome)) {
+    errors.nome = "Preencha o campo obrigatório";
   }
-  
+
+  // Validação do email
+  if (!validateRequired(user.email)) {
+    errors.email = "Preencha o campo obrigatório";
+  } else if (!validateEmail(user.email)) {
+    errors.email = "Email não está no formato correto";
+    console.log("Erro de validação: Formato de email inválido");
+  }
+
+  // Validação do telefone celular
+  if (!validateRequired(user.telefoneCelular)) {
+    errors.telefoneCelular = "Preencha o campo obrigatório";
+  } else if (!validatePhoneNumber(user.telefoneCelular)) {
+    errors.telefoneCelular = "Telefone celular não está no formato correto";
+    console.log("Erro de validação: Formato de telefone celular inválido");
+  }
+
+  return errors;
+}
