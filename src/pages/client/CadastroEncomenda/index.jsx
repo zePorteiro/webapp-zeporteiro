@@ -1,6 +1,5 @@
 import Style from "../../../assets/ClientPagesStyles"
 import Sidebar from "../../../components/SideNavbar/index";
-import Logo from "../../../components/Logo";
 import FormSignUp from "./Forms/index";
 import Image from "../../../assets/imgs/imgCadastroEncomenda.png";
 
@@ -12,9 +11,6 @@ function CadastrarEncomenda() {
             <Style />
             <Sidebar />
             <ContentWrapper>
-                <LogoWrapper>
-                    <Logo />
-                </LogoWrapper>
                 <MainContent>
                     <Formulario>
                         <FormSignUp />

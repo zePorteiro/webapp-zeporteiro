@@ -21,9 +21,6 @@ export default function MenuUsuario() {
           <Link onClick={() => window.location.href = '/pagina-inicial'}>
             Página Inicial
           </Link>
-          <Link onClick={() => window.location.href = '/cadastrar-encomenda'}>
-            Cadastrar Encomendas
-          </Link>
           <Link onClick={() => window.location.href = '/estoque'}>
             Estoque
           </Link>

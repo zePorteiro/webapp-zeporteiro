@@ -26,13 +26,6 @@ export const ContentWrapper = styled.div`
   }
 `;
 
-export const LogoWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 4vh;
-  margin-bottom: 2vh;
-`;
-
 export const MainContent = styled.div`
   display: flex;
   justify-content: space-between;

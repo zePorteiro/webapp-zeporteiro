@@ -8,7 +8,6 @@ import Vantagens from "./Vantagens/index";
 import Aplicativo from "./Aplicativo/index";
 import Footer from "../components/Footer/index";
 import BotaoScroll from "../components/Buttons/ScrollUp/index";
-
 const AppContainer = styled.div`
   font-family: "Open Sans", "Montserrat", "Mulish", Arial, Helvetica, sans-serif;
   width: 100vw;
