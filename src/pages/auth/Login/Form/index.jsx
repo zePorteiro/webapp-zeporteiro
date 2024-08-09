@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import authService from "../../../../services/api/authService";
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import IconButton from "@mui/material/IconButton";
+import Visibility from '@mui/icons-material/Visibility';
 import {
   Form,
   InputWrapper,
@@ -8,11 +11,9 @@ import {
   EmailInput,
   PasswordField,
   PasswordInput,
-  EyeIcon,
   MensagemErro,
   Botao,
 } from "./styles";
-import IconButton from "@mui/material/IconButton";
 
 const FormularioLogin = () => {
   const [email, setEmail] = useState("");
@@ -52,18 +53,38 @@ const FormularioLogin = () => {
     event.preventDefault();
     setLoading(true);
     setError(null);
+    console.log("Formulário de login submetido.");
 
     try {
-      const response = await authService.login(email, senha);
-      if (response) {
-        window.location.href = "/cadastrar-encomenda";
+      const response = await axios.post("http://localhost:8080/clientes", {
+        email,
+        senha,
+      });
+
+      console.log("Status HTTP da resposta:", response.status);
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Login realizado com sucesso!");
+        setTimeout(() => {
+          window.location.href = "/cadastrar-encomenda";
+        }, 3000);
       }
     } catch (error) {
       console.error("Erro ao fazer login:", error);
-      setError("Ocorreu um erro ao fazer login. Por favor, tente novamente.");
+
+      if (error.response) {
+        if (error.response.status === 401) {
+          toast.error("Credenciais incorretas. Verifique seu email e senha.");
+        } else {
+          toast.error(error.response.data.message || "Erro ao fazer login. Por favor, tente novamente.");
+        }
+      } else {
+        toast.error("Erro ao fazer login. Verifique sua conexão e tente novamente.");
+      }
     }
 
     setLoading(false);
+    console.log("Processo de login concluído.");
   };
 
   return (
@@ -102,9 +123,9 @@ const FormularioLogin = () => {
             autoComplete="current-password"
             disabled={loading}
           />
-          <IconButton
-            onClick={togglePasswordVisibility}
-          />
+          <IconButton onClick={togglePasswordVisibility}>
+            <Visibility /> {/* Inclua o ícone aqui */}
+          </IconButton>
         </PasswordField>
       </InputWrapper>
       {error && <MensagemErro>{error}</MensagemErro>}
