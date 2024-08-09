@@ -44,6 +44,9 @@ export default function CadastrarEncomendas() {
     const dataRecebimento = new Date(formData.formattedRecebimento);
     const dataEntrega = new Date(formData.dataEntrega);
 
+    console.log('Data de Recebimento:', dataRecebimento);
+    console.log('Data de Entrega:', dataEntrega);
+
     if (dataEntrega < dataRecebimento) {
       setDateError(true);
       return;
@@ -59,11 +62,12 @@ export default function CadastrarEncomendas() {
 
     // FAZER REQUISIÇÃO PARA A API
     try {
-      const response = await axios.post("url_da_sua_api", formData);
+      console.log('Enviando dados para a API:', formData);
+      const response = await axios.post("http://localhost:8080/entregas", formData);
       console.log("Encomenda cadastrada com sucesso!");
       console.log(response.data);
     } catch (error) {
-      console.error("Erro ao cadastrar encomenda:", error.message);
+      console.error("Erro ao cadastrar encomenda:", error.response ? error.response.data : error.message);
     }
   };
 
@@ -129,8 +133,7 @@ export default function CadastrarEncomendas() {
               Número do Apartamento
             </Form.Label>
             <Form.Control
-              required
-              type="number"
+              type="text"
               placeholder="Digite o número do apartamento"
               name="numeroApartamento"
               value={formData.numeroApartamento}
@@ -185,7 +188,6 @@ export default function CadastrarEncomendas() {
               Data de entrega ao destinatário
             </Form.Label>
             <Form.Control
-              required
               type="date"
               name="dataEntrega"
               value={formData.dataEntrega}
