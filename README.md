@@ -26,11 +26,6 @@ Com o crescimento das compras online, os condomínios enfrentam desafios na gest
   <img src="https://skillicons.dev/icons?i=react,javascript,styledcomponents,java,figma,git,github,npm,vscode" />
 </a>
 
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
 ## Licença
 
-Esse projeto está sob licença MIT. Veja o arquivo [MIT](LICENSE.md) para mais detalhes.
+Esse projeto está sob licença MIT. Veja o arquivo [MIT](https://github.com/zePorteiro/webapp-zeporteiro/blob/main/LICENSE) para mais detalhes.
