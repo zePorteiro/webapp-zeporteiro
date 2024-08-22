@@ -287,7 +287,8 @@ function useCreateUser() {
       try {
         const response = await axios.post('http://localhost:8080/apartamentos', apartamentos, {
           headers: {
-            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            'Content-Type': 'application/json'
           },
         });
         return response.data;

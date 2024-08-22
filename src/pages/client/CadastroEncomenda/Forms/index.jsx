@@ -60,10 +60,15 @@ export default function CadastrarEncomendas() {
 
     setValidated(true);
 
+
     // FAZER REQUISIÇÃO PARA A API
     try {
       console.log('Enviando dados para a API:', formData);
-      const response = await axios.post("http://localhost:8080/entregas", formData);
+      const response = await axios.post(`http://localhost:8080/entregas`, formData, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("token")}`
+        }
+      });
       console.log("Encomenda cadastrada com sucesso!");
       console.log(response.data);
     } catch (error) {
@@ -74,7 +79,7 @@ export default function CadastrarEncomendas() {
   const handleChange = (event) => {
     const { name, value } = event.target;
     // Verificar se o valor inserido contém apenas letras
-    if (/^[a-zA-Z]+$/.test(value) || value === "") {
+    if (/^[a-zA-Z0-9]+$/.test(value) || value === "") {
       setFormData({ ...formData, [name]: value });
     }
   };
@@ -133,7 +138,7 @@ export default function CadastrarEncomendas() {
               Número do Apartamento
             </Form.Label>
             <Form.Control
-              type="text"
+              type="number"
               placeholder="Digite o número do apartamento"
               name="numeroApartamento"
               value={formData.numeroApartamento}

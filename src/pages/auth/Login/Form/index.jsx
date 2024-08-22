@@ -56,10 +56,11 @@ const FormularioLogin = () => {
     console.log("Formulário de login submetido.");
 
     try {
-      const response = await axios.post("http://localhost:8080/clientes", {
+      const response = await axios.post("http://localhost:8080/clientes/login", {
         email,
         senha,
       });
+      sessionStorage.setItem("token", response.data.token)
 
       console.log("Status HTTP da resposta:", response.status);
 

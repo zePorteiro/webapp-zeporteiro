@@ -1,11 +1,18 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-const API_URL = 'http://172.206.254.101:8080/';
+const API_URL = 'http://localhost:8080/';
 
 class AuthService {
   async login(email, senha) {
-    const response = await axios.post(`${API_URL}/clientes/login`, { email, senha });
+    const response = await axios.post(`${API_URL}/clientes/login`, { email, senha })
+    .then(
+      response => {
+          alert('qualqer coisao')
+          console.log(response.data)
+          sessionStorage.setItem("dados", response.data)        
+      }
+  );
     if (response.data.token) {
       sessionStorage.setItem('user', JSON.stringify(response.data));
     }

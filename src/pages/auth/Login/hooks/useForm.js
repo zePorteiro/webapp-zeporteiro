@@ -20,7 +20,15 @@ const useForm = () => {
         setError(null);
 
         try {
-            const response = await axios.post("http://localhost:8080/clientes/login", { email, senha });
+            const response = await axios.post("http://localhost:8080/clientes/login", { email, senha })
+            .then(
+                response => {
+                    alert('qualqer')
+                    console.log(response.data)
+                    sessionStorage.setItem("dados", response.data)        
+                }
+            );
+            console.log(response.data)
 
             if (response.status === 200) {
                 window.location.href = "/cadastrar-encomenda";
