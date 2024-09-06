@@ -4,6 +4,8 @@ import { Formulario, ErrorPopup, Botao } from "./styles";
 import { CampoInputCadastro, InputCadastro, Label } from "../../Inputs/styles";
 import { useNavigate } from "react-router-dom";
 import { validarCEP, validarNumero, validarPreenchido } from "../../../../../utils/formValidation";
+import { ToastContainer, toast } from "react-toastify"; // Adicione esta linha
+import 'react-toastify/dist/ReactToastify.css'; // Adicione esta linha
 
 export default function PaginaCondominio() {
   const [cep, setCep] = useState("");
@@ -98,20 +100,31 @@ export default function PaginaCondominio() {
     }
 
     try {
-      const response = await axios.post("http://localhost:8080/condominios", {
-        nome,
-        cep,
-        logradouro,
-        numero,
-        bairro,
-        cidade,
-      });
+      const response = await axios.post(
+        "http://localhost:8080/condominios",
+        {
+          nome,
+          cep,
+          logradouro,
+          numero,
+          bairro,
+          cidade,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      console.log("Resposta do servidor:", response); // Log para depuração
 
       if (response.status === 201) {
-        navigate("/login");
+        navigate("/cadastrar-encomenda");
       }
     } catch (error) {
-      console.error("Erro ao cadastrar condomínio:", error);
+      console.error("Erro ao cadastrar condomínio:", error.response ? error.response.data : error.message);
+      setError("Erro ao cadastrar condomínio. Por favor, tente novamente.");
     }
   };
 
@@ -203,6 +216,7 @@ export default function PaginaCondominio() {
           Cadastrar Condomínio
         </Botao>
       </form>
+      <ToastContainer /> {/* Certifique-se de que este componente está importado */}
     </Formulario>
   );
 }

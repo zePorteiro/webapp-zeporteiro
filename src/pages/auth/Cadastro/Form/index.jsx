@@ -12,7 +12,6 @@ export default function FormularioCadastro() {
   const [email, setEmail] = useState("");
   const [emailValido, setEmailValido] = useState(true);
   const [telefone, setTelefone] = useState("");
-  // const [telefoneValido, setTelefoneValido] = useState(true);
   const [senha, setSenha] = useState("");
   const [senhaValida, setSenhaValida] = useState(true);
   const [nome, setNome] = useState("");
@@ -37,10 +36,6 @@ export default function FormularioCadastro() {
       setTelefone(formatarTelefone(novoTelefone));
     }
   };
-
-  // const handleBlurTelefone = () => {
-  //   setTelefoneValido(telefone.length <= 11);
-  // };
 
   const handleChangeSenha = (event) => {
     const novaSenha = event.target.value;
@@ -77,11 +72,6 @@ export default function FormularioCadastro() {
       return;
     }
 
-    // if (!telefoneValido) {
-    //   toast.error("O telefone deve conter exatamente 11 dígitos.");
-    //   return;
-    // }
-
     if (!validarSenha(senha)) {
       setSenhaValida(false);
       toast.error("Senha deve ter no mínimo 6 caracteres.");
@@ -89,18 +79,23 @@ export default function FormularioCadastro() {
     }
 
     try {
-      const response = await axios.post("http://localhost:8080/clientes", {
-        nome,
-        email,
-        telefone,
-        senha,
-      });
+      const response = await axios.post(
+        "http://localhost:8080/clientes",
+        {
+          nome,
+          email,
+          telefone,
+          senha,
+        }
+      );
 
       if (response.status === 201) {
+        const token = response.data.token;
+        sessionStorage.setItem("token", token); // Armazene o token na session storage
         toast.success("Cadastro concluído com sucesso!");
         setTimeout(() => {
-          window.location.href = "/cadastrarcondominio";
-        }, 3000); // Redireciona após 3 segundos
+          window.location.href = "/cadastrarcondominio"; // Redireciona para a página de condomínios
+        }, 2000); // Redireciona após 2 segundos
       }
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -115,6 +110,7 @@ export default function FormularioCadastro() {
   return (
     <Formulario>
       <form onSubmit={handleSubmit}>
+
         <CampoInputCadastro>
           <Label htmlFor="nomeInput">Nome</Label>
           <InputCadastro
@@ -152,11 +148,7 @@ export default function FormularioCadastro() {
             placeholder="(00) 99999-9999"
             value={telefone}
             onChange={handleChangeTelefone}
-            // onBlur={handleBlurTelefone}
           />
-          {/* {!telefoneValido && (
-            <span style={{ color: "red" }}>Telefone deve ter exatamente 11 dígitos</span>
-          )} */}
         </CampoInputCadastro>
 
         <CampoInputCadastro>
