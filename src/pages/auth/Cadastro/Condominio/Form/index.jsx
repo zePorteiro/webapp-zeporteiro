@@ -109,6 +109,7 @@ export default function PaginaCondominio() {
           numero,
           bairro,
           cidade,
+          fkCliente: localStorage.getItem("user"),
         },
         {
           headers: {
@@ -116,6 +117,8 @@ export default function PaginaCondominio() {
           },
         }
       );
+
+
 
       console.log("Resposta do servidor:", response); // Log para depuração
 
