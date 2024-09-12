@@ -14,6 +14,8 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   QueryClient,
   QueryClientProvider,
@@ -21,13 +23,11 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 
 const TableApartamentos = () => {
   const [validationErrors, setValidationErrors] = useState({});
 
-  const { mutateAsync: createApartamentos, isPending: isCreatingApartamentos } = useCreateUser();
+  const { mutateAsync: createApartamentos, isPending: isCreatingApartamentos } = useCreateApartamento(); // Atualize o nome do hook
 
   const columns = useMemo(
     () => [
@@ -44,13 +44,11 @@ const TableApartamentos = () => {
           required: true,
           error: !!validationErrors?.nome,
           helperText: validationErrors?.nome,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
               nome: undefined,
             }),
-          //optionally add validation checking for onBlur or onChange
         },
       },
       {
@@ -61,7 +59,6 @@ const TableApartamentos = () => {
           required: true,
           error: !!validationErrors?.email,
           helperText: validationErrors?.email,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
@@ -76,13 +73,11 @@ const TableApartamentos = () => {
           required: false,
           error: !!validationErrors?.bloco,
           helperText: validationErrors?.bloco,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
               bloco: undefined,
             }),
-          //optionally add validation checking for onBlur or onChange
         },
       },
       {
@@ -97,7 +92,6 @@ const TableApartamentos = () => {
           },
           error: !!validationErrors?.telefoneCelular,
           helperText: validationErrors?.telefoneCelular,
-          // remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
@@ -117,7 +111,6 @@ const TableApartamentos = () => {
           },
           error: !!validationErrors?.telefoneFixo,
           helperText: validationErrors?.telefoneFixo,
-          // remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
@@ -129,34 +122,41 @@ const TableApartamentos = () => {
     [validationErrors]
   );
 
-  // Função para lidar com a criação de apartamentos
   const handleCreateApartamentos = async ({ values, table }) => {
     try {
-      await createApartamentos(values); // Envie a lista de apartamentos
-      table.setCreatingRow(null); // Saia do modo de criação
+      const apartamento = {
+        bloco: values.bloco,
+        numeroAp: values.numeroAp,
+        vazio: values.vazio !== undefined ? values.vazio : false, // Garante que `vazio` não seja `undefined`
+        condominioId: values.condominioId
+      };
+      
+      // Adicione um log para verificar o objeto
+      console.log('Criando apartamento:', JSON.stringify(apartamento, null, 2));
+      
+      await createApartamentos(apartamento);
+      table.setCreatingRow(null);
     } catch (error) {
-      console.error('Erro ao criar apartamentos:', error);
+      console.error('Erro ao criar apartamento:', error);
     }
   };
 
-  //call CREATE hook
-  const { mutateAsync: createUser, isPending: isCreatingUser } =
-    useCreateUser();
-  //call READ hook
+  // Call CREATE hook
+  const { mutateAsync: createUser, isPending: isCreatingUser } = useCreateApartamento();
+  // Call READ hook
   const {
     data: fetchedUsers = [],
     isError: isLoadingUsersError,
     isFetching: isFetchingUsers,
     isLoading: isLoadingUsers,
-  } = useGetUsers();
-  //call UPDATE hook
-  const { mutateAsync: updateUser, isPending: isUpdatingUser } =
-    useUpdateUser();
-  //call DELETE hook
-  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
-    useDeleteUser();
+  } = useGetApartamentos();
+  // Call UPDATE hook
+  const { mutateAsync: updateUser, isPending: isUpdatingUser } = useUpdateUser();
+  // Call DELETE hook
+  const { mutateAsync: deleteUser, isPending: isDeletingUser } = useDeleteUser();
 
-  //CREATE action
+
+  // CREATE action
   const handleCreateUser = async ({ values, table }) => {
     const newValidationErrors = validateUser(values);
     if (Object.values(newValidationErrors).some((error) => error)) {
@@ -164,11 +164,10 @@ const TableApartamentos = () => {
       return;
     }
     setValidationErrors({});
-    await createUser(values);
-    table.setCreatingRow(null); //exit creating mode
+    await handleCreateApartamentos({ values, table }); // Use handleCreateApartamentos aqui
   };
 
-  //UPDATE action
+  // UPDATE action
   const handleSaveUser = async ({ values, table }) => {
     const newValidationErrors = validateUser(values);
     if (Object.values(newValidationErrors).some((error) => error)) {
@@ -177,10 +176,10 @@ const TableApartamentos = () => {
     }
     setValidationErrors({});
     await updateUser(values);
-    table.setEditingRow(null); //exit editing mode
+    table.setEditingRow(null);
   };
 
-  //DELETE action
+  // DELETE action
   const openDeleteConfirmModal = (row) => {
     if (window.confirm("Tem certeza que deseja excluir esse usuário?")) {
       deleteUser(row.original.id);
@@ -190,14 +189,14 @@ const TableApartamentos = () => {
   const table = useMaterialReactTable({
     columns,
     data: fetchedUsers,
-    createDisplayMode: "modal", //default ('row', and 'custom' are also available)
-    editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
+    createDisplayMode: "modal",
+    editDisplayMode: "modal",
     enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? {
         color: "error",
-        children: "Error loading data",
+        children: "Erro ao carregar dados",
       }
       : undefined,
     muiTableContainerProps: {
@@ -206,31 +205,29 @@ const TableApartamentos = () => {
       },
     },
     onCreatingRowCancel: () => setValidationErrors({}),
-    onCreatingRowSave: handleCreateUser,
+    onCreatingRowSave: handleCreateApartamentos, // Atualize para usar handleCreateApartamentos
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveUser,
-    //optionally customize modal content
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
         <DialogTitle variant="h3">Adicionar Apartamento</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */}
+          {internalEditComponents}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
         </DialogActions>
       </>
     ),
-    //optionally customize modal content
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
         <DialogTitle variant="h3">Editar Apartamento</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */}
+          {internalEditComponents}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -239,12 +236,12 @@ const TableApartamentos = () => {
     ),
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
-        <Tooltip title="Edit">
+        <Tooltip title="Editar">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Delete">
+        <Tooltip title="Excluir">
           <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
@@ -254,58 +251,53 @@ const TableApartamentos = () => {
     renderTopToolbarCustomActions: ({ table }) => (
       <Button
         variant="contained"
-        onClick={() => {
-          table.setCreatingRow(true); //simplest way to open the create row modal with no default values
-          //or you can pass in a row object to set default values with the `createRow` helper function
-          // table.setCreatingRow(
-          //   createRow(table, {
-          //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
-          //   }),
-          // );
-        }}
+        onClick={() => table.setCreatingRow(true)}
       >
         Adicionar Apartamento
       </Button>
     ),
-    telefoneCelular: {
-      isLoading: isLoadingUsers,
-      isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
-      showAlertBanner: isLoadingUsersError,
-      showProgressBars: isFetchingUsers,
-    },
+    isLoading: isLoadingUsers,
+    isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
+    showAlertBanner: isLoadingUsersError,
+    showProgressBars: isFetchingUsers,
   });
 
   return <MaterialReactTable table={table} />;
 };
 
-//CREATE hook (post new user to api)
-function useCreateUser() {
+// CREATE hook (post new user to API)
+function useCreateApartamento() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (apartamentos) => {
+    mutationFn: async (apartamento) => {
       try {
-        const response = await axios.post('http://localhost:8080/apartamentos', apartamentos, {
+        // Adicione o log para verificar o formato do objeto
+        console.log('Enviando apartamento:', JSON.stringify(apartamento, null, 2));
+
+        const fkUser = sessionStorage.getItem("fkUser") - 1;
+        const response = await axios.post(`http://localhost:8080/apartamentos/${fkUser}`, apartamento, {
           headers: {
             Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             'Content-Type': 'application/json'
           },
         });
+        console.log('Resposta:', response.data);
         return response.data;
       } catch (error) {
-        console.error('Erro ao criar apartamentos:', error.response ? error.response.data : error.message);
+        console.error('Erro ao criar apartamento:', error.response ? error.response.data : error.message);
         throw error;
       }
     },
-    onMutate: async (newApartamentos) => {
+    onMutate: async (newApartamento) => {
       await queryClient.cancelQueries(['users']);
       const previousUsers = queryClient.getQueryData(['users']) || [];
       
-      // Verifica se newApartamentos é um array
-      if (Array.isArray(newApartamentos)) {
-        queryClient.setQueryData(['users'], [...previousUsers, ...newApartamentos]);
+      // Verifique se newApartamento é um objeto e adicione-o à lista de usuários
+      if (typeof newApartamento === 'object' && !Array.isArray(newApartamento)) {
+        queryClient.setQueryData(['users'], [...previousUsers, newApartamento]);
       } else {
-        console.error('newApartamentos não é um array:', newApartamentos);
+        console.error('newApartamento não é um objeto:', newApartamento);
       }
 
       return { previousUsers };
@@ -313,7 +305,7 @@ function useCreateUser() {
     onSettled: () => {
       queryClient.invalidateQueries(['users']);
     },
-    onError: (error, newApartamentos, context) => {
+    onError: (error, newApartamento, context) => {
       if (context?.previousUsers) {
         queryClient.setQueryData(['users'], context.previousUsers);
       }
@@ -321,20 +313,22 @@ function useCreateUser() {
   });
 }
 
+
+
 //READ hook (get users from api)
-function useGetUsers() {
+function useGetApartamentos() {
   return useQuery({
-    queryKey: ["users"],
+    queryKey: ['apartamentos'],
     queryFn: async () => {
       try {
-        const response = await axios.get("http://localhost:8080/apartamentos", {
+        const response = await axios.get('http://localhost:8080/apartamentos', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
         });
         return response.data;
       } catch (error) {
-        console.error("Erro ao obter dados:", {
+        console.error('Erro ao obter dados:', {
           status: error.response?.status,
           data: error.response?.data,
           message: error.message,
@@ -346,6 +340,8 @@ function useGetUsers() {
   });
 }
 
+
+
 //UPDATE hook (put user in api)
 function useUpdateUser() {
   const queryClient = useQueryClient();
@@ -355,11 +351,11 @@ function useUpdateUser() {
       try {
         // Realiza a requisição PUT à API para atualizar o usuário
         const response = await axios.put(
-          `http://localhost:8080/apartamentos/${user.id}`,
+          `http://localhost:8080/apartamentos/${user.id}`, // Atualize o endpoint da API conforme necessário
           user,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Inclua o token se a API precisar de autenticação
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Inclua o token se a API precisar de autenticação
             },
           }
         );
@@ -403,7 +399,7 @@ function useDeleteUser() {
         // Realiza a requisição DELETE à API para excluir o usuário
         await axios.delete(`http://localhost:8080/apartamentos/${userId}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Inclua o token se a API precisar de autenticação
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Inclua o token se a API precisar de autenticação
           },
         });
         return; // Apenas resolve sem dados, pois a exclusão não retorna um corpo

@@ -109,7 +109,7 @@ export default function PaginaCondominio() {
           numero,
           bairro,
           cidade,
-          fkCliente: localStorage.getItem("user"),
+          fkCliente: sessionStorage.getItem("fkUser"),
         },
         {
           headers: {
@@ -123,7 +123,7 @@ export default function PaginaCondominio() {
       console.log("Resposta do servidor:", response); // Log para depuração
 
       if (response.status === 201) {
-        navigate("/cadastrar-encomenda");
+        navigate("/apartamentos");
       }
     } catch (error) {
       console.error("Erro ao cadastrar condomínio:", error.response ? error.response.data : error.message);

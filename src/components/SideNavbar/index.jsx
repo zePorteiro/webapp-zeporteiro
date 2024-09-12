@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Logo from "../../assets/imgs/LogoPadrao.svg";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { PageContainer, Sidebar, Imagem, Links, Link, HamburgerMenu } from "./styles";
+import  AuthService from "../../services/api/authService";
 
 export default function MenuUsuario() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,7 +31,7 @@ export default function MenuUsuario() {
           <Link onClick={() => window.location.href = '/porteiros'}>
             Porteiros
           </Link>
-          <Link onClick={() => window.location.href = '/login'}>
+          <Link onClick={() => AuthService.logout()}>
             SAIR
           </Link>
         </Links>

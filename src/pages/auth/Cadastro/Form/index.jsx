@@ -93,6 +93,9 @@ export default function FormularioCadastro() {
         const token = response.data.token;
         sessionStorage.setItem("token", token); // Armazene o token na session storage
         toast.success("Cadastro concluído com sucesso!");
+        console.log("Resposta do cadastro:", JSON.stringify(response.data));
+        const fkUser = response.data.userId;
+        sessionStorage.setItem("fkUser", fkUser); // Armazene o id do usuário na session storage
         setTimeout(() => {
           window.location.href = "/cadastrarcondominio"; // Redireciona para a página de condomínios
         }, 2000); // Redireciona após 2 segundos

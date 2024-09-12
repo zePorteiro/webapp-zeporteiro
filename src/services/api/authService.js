@@ -1,16 +1,12 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // Corrigir a importação
-
-import { useNavigate } from "react-router-dom";
-
-const API_URL = 'http://172.206.254.101:8080/';
 const localHost = 'http://localhost:8080/';
 
 class AuthService {
   async login(email, senha) {
   try {
       const response = await axios.post(`${localHost}clientes/login`, { email, senha });
-      const token = response.data.token;
+      //const token = response.data.token;
 
 
       window.location.href = "/cadastrar-encomenda";
@@ -34,6 +30,9 @@ class AuthService {
 
   logout() {
     localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('userId');
+    window.location.href = '/login';
   }
 
   isAuthenticated() {
