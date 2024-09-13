@@ -1,8 +1,55 @@
 import { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import axios from "axios";
+
+// Função para criar encomenda 
+function useCreateEncomenda() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (encomenda) => {
+      try {
+        console.log("Enviando encomenda:", JSON.stringify(encomenda, null, 2));
+
+        const fkUser = sessionStorage.getItem("fkUser") - 1;
+        const response = await axios.post(`http://localhost:8080/entregas/${fkUser}`, encomenda, {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            "Content-Type": "application/json"
+          },
+        });
+        console.log("Resposta:", response.data);
+        return response.data;
+      } catch (error) {
+        console.error("Erro ao criar encomenda:", error.response ? error.response.data : error.message);
+        throw error;
+      }
+    },
+    onMutate: async (newEncomenda) => {
+      await queryClient.cancelQueries(['entregas']);
+      const previousEntregas = queryClient.getQueryData(['entregas']) || [];
+
+      if (typeof newEncomenda === 'object' && !Array.isArray(newEncomenda)) {
+        queryClient.setQueryData(['entregas'], [...previousEntregas, newEncomenda]);
+      } else {
+        console.error('newEncomenda não é um objeto:', newEncomenda);
+      }
+
+      return { previousEntregas };
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(['entregas']);
+    },
+    onError: (error, newEncomenda, context) => {
+      if (context?.previousEntregas) {
+        queryClient.setQueryData(['entregas'], context.previousEntregas);
+      }
+    },
+  });
+}
 
 export default function CadastrarEncomendas() {
   const [validated, setValidated] = useState(false);
@@ -15,28 +62,22 @@ export default function CadastrarEncomendas() {
     dataEntrega: "",
   });
   const [dateError, setDateError] = useState(false);
+  const createEncomendaMutation = useCreateEncomenda();
 
   useEffect(() => {
     const today = new Date();
     const brDate = new Date(
       today.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
-    );
-    const formattedDate = `${String(brDate.getDate()).padStart(
-      2,
-      "0"
-    )}/${String(brDate.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}/${brDate.getFullYear()}`;
-    const formattedInputDate = `${brDate.getFullYear()}-${String(
-      brDate.getMonth() + 1
-    ).padStart(2, "0")}-${String(brDate.getDate()).padStart(2, "0")}`;
+    );    
+    const formattedDate = `${String(brDate.getDate()).padStart(2, "0")}/${String(brDate.getMonth() + 1).padStart(2, "0")}/${brDate.getFullYear()}`;
+    const formattedInputDate = `${brDate.getFullYear()}-${String(brDate.getMonth() + 1).padStart(2, "0")}-${String(brDate.getDate()).padStart(2, "0")}`;
+    
     setFormData((prevData) => ({
       ...prevData,
       dataRecebimento: formattedDate,
       formattedRecebimento: formattedInputDate,
     }));
-  }, []);
+  }, []);  
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -60,25 +101,12 @@ export default function CadastrarEncomendas() {
 
     setValidated(true);
 
-
-    // FAZER REQUISIÇÃO PARA A API
-    try {
-      console.log('Enviando dados para a API:', formData);
-      const response = await axios.post(`http://localhost:8080/entregas`, formData, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`
-        }
-      });
-      console.log("Encomenda cadastrada com sucesso!");
-      console.log(response.data);
-    } catch (error) {
-      console.error("Erro ao cadastrar encomenda:", error.response ? error.response.data : error.message);
-    }
+    // Enviar dados usando a mutação
+    createEncomendaMutation.mutate(formData);
   };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    // Verificar se o valor inserido contém apenas letras
     if (/^[a-zA-Z0-9]+$/.test(value) || value === "") {
       setFormData({ ...formData, [name]: value });
     }
@@ -92,15 +120,8 @@ export default function CadastrarEncomendas() {
 
       <Form noValidate validated={validated} onSubmit={handleSubmit}>
         <Col className="mb-3">
-          <Form.Group
-            as={Col}
-            md="8"
-            controlId="validationCustom01"
-            className="mb-2"
-          >
-            <Form.Label className="form-label-sm">
-              Nome do Destinatário
-            </Form.Label>
+          <Form.Group as={Col} md="8" controlId="validationCustom01" className="mb-2">
+            <Form.Label className="form-label-sm">Nome do Destinatário</Form.Label>
             <Form.Control
               required
               type="text"
@@ -110,15 +131,9 @@ export default function CadastrarEncomendas() {
               onChange={handleChange}
             />
           </Form.Group>
-          <Form.Group
-            as={Col}
-            md="8"
-            controlId="validationCustom02"
-            className="mb-2"
-          >
-            <Form.Label className="form-label-sm">
-              Bloco do Destinatário
-            </Form.Label>
+
+          <Form.Group as={Col} md="8" controlId="validationCustom02" className="mb-2">
+            <Form.Label className="form-label-sm">Bloco do Destinatário</Form.Label>
             <Form.Control
               type="text"
               placeholder="Digite o bloco do destinatário"
@@ -128,15 +143,8 @@ export default function CadastrarEncomendas() {
             />
           </Form.Group>
 
-          <Form.Group
-            as={Col}
-            md="8"
-            controlId="validationCustom03"
-            className="mb-2"
-          >
-            <Form.Label className="form-label-sm">
-              Número do Apartamento
-            </Form.Label>
+          <Form.Group as={Col} md="8" controlId="validationCustom03" className="mb-2">
+            <Form.Label className="form-label-sm">Número do Apartamento</Form.Label>
             <Form.Control
               type="number"
               placeholder="Digite o número do apartamento"
@@ -146,13 +154,9 @@ export default function CadastrarEncomendas() {
             />
           </Form.Group>
         </Col>
+
         <Col>
-          <Form.Group
-            as={Col}
-            md="8"
-            controlId="validationCustom04"
-            className="mb-2"
-          >
+          <Form.Group as={Col} md="8" controlId="validationCustom04" className="mb-2">
             <Form.Label className="form-label-sm">Tipo de Entrega</Form.Label>
             <Form.Control
               type="text"
@@ -166,15 +170,9 @@ export default function CadastrarEncomendas() {
               Forneça um tipo de entrega válido.
             </Form.Control.Feedback>
           </Form.Group>
-          <Form.Group
-            as={Col}
-            md="8"
-            controlId="validationCustom05"
-            className="mb-2"
-          >
-            <Form.Label className="form-label-sm">
-              Data de Recebimento
-            </Form.Label>
+
+          <Form.Group as={Col} md="8" controlId="validationCustom05" className="mb-2">
+            <Form.Label className="form-label-sm">Data de Recebimento</Form.Label>
             <Form.Control
               required
               type="text"
@@ -183,15 +181,9 @@ export default function CadastrarEncomendas() {
               onChange={handleChange}
             />
           </Form.Group>
-          <Form.Group
-            as={Col}
-            md="8"
-            controlId="validationCustom06"
-            className="mb-4"
-          >
-            <Form.Label className="form-label-sm">
-              Data de entrega ao destinatário
-            </Form.Label>
+
+          <Form.Group as={Col} md="8" controlId="validationCustom06" className="mb-4">
+            <Form.Label className="form-label-sm">Data de entrega ao destinatário</Form.Label>
             <Form.Control
               type="date"
               name="dataEntrega"
@@ -200,13 +192,8 @@ export default function CadastrarEncomendas() {
               isInvalid={dateError}
               className={dateError ? "is-invalid" : ""}
             />
-            <Form.Control.Feedback
-              type="invalid"
-              style={{ display: dateError ? "block" : "none" }}
-            >
-              {formData.dataEntrega < formData.formattedRecebimento
-                ? "A data deve ser posterior a data de recebimento"
-                : null}
+            <Form.Control.Feedback type="invalid" style={{ display: dateError ? "block" : "none" }}>
+              A data deve ser posterior à data de recebimento.
             </Form.Control.Feedback>
           </Form.Group>
         </Col>
