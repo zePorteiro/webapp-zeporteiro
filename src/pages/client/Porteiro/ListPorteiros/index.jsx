@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react';
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
-  // createRow,
   useMaterialReactTable,
 } from 'material-react-table';
 import {
@@ -44,13 +43,11 @@ const TablePorteiros = () => {
           required: true,
           error: !!validationErrors?.nome,
           helperText: validationErrors?.nome,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
               nome: undefined,
             }),
-          //optionally add validation checking for onBlur or onChange
         },
       },
       {
@@ -61,7 +58,6 @@ const TablePorteiros = () => {
           required: true,
           error: !!validationErrors?.email,
           helperText: validationErrors?.email,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
@@ -77,7 +73,7 @@ const TablePorteiros = () => {
           { value: 'Manhã', label: 'Manhã' },
           { value: 'Tarde', label: 'Tarde' },
           { value: 'Noite', label: 'Noite' },
-        ], // Options to select
+        ], 
         muiEditTextFieldProps: {
           select: true,
           error: !!validationErrors?.turno,
@@ -96,7 +92,6 @@ const TablePorteiros = () => {
           },
           error: !!validationErrors?.telefoneCelular,
           helperText: validationErrors?.telefoneCelular,
-          // remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
@@ -134,7 +129,7 @@ const TablePorteiros = () => {
     }
     setValidationErrors({});
     await createUser(values);
-    table.setCreatingRow(null); //exit creating mode
+    table.setCreatingRow(null); 
   };
 
   //UPDATE action
@@ -146,7 +141,7 @@ const TablePorteiros = () => {
     }
     setValidationErrors({});
     await updateUser(values);
-    table.setEditingRow(null); //exit editing mode
+    table.setEditingRow(null);
   };
 
   //DELETE action
@@ -159,8 +154,8 @@ const TablePorteiros = () => {
   const table = useMaterialReactTable({
     columns,
     data: fetchedUsers,
-    createDisplayMode: 'modal', //default ('row', and 'custom' are also available)
-    editDisplayMode: 'modal', //default ('row', 'cell', 'table', and 'custom' are also available)
+    createDisplayMode: 'modal', 
+    editDisplayMode: 'modal',
     enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
@@ -178,7 +173,7 @@ const TablePorteiros = () => {
     onCreatingRowSave: handleCreateUser,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveUser,
-    //optionally customize modal content
+
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
         <DialogTitle variant="h3">Adicionar Porteiro</DialogTitle>
@@ -224,13 +219,7 @@ const TablePorteiros = () => {
       <Button
         variant="contained"
         onClick={() => {
-          table.setCreatingRow(true); //simplest way to open the create row modal with no default values
-          //or you can pass in a row object to set default values with the `createRow` helper function
-          // table.setCreatingRow(
-          //   createRow(table, {
-          //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
-          //   }),
-          // );
+          table.setCreatingRow(true); 
         }}
       >
         Adicionar Porteiro
@@ -254,57 +243,73 @@ function useCreateUser() {
   return useMutation({
     mutationFn: async (user) => {
       try {
-        const response = await axios.post('http://localhost:8080/porteiros', user, {
+        console.log('Enviando porteiro:', JSON.stringify(user, null, 2));
+
+        const fkUser = sessionStorage.getItem("fkUser") - 1;
+        const response = await axios.post(`http://localhost:8080/porteiros/${fkUser}`, user, {
           headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             'Content-Type': 'application/json',
           },
         });
+        console.log('Resposta:', response.data);
         return response.data;
       } catch (error) {
-        console.error('Erro ao criar usuário:', error.response ? error.response.data : error.message);
+        console.error('Erro ao criar porteiro:', error.response ? error.response.data : error.message);
         throw error;
       }
     },
     onMutate: async (newUser) => {
-      await queryClient.cancelQueries(['users']);
-      const previousUsers = queryClient.getQueryData(['users']) || [];
+      await queryClient.cancelQueries(['porteiros']);
+      const previousUsers = queryClient.getQueryData(['porteiros']) || [];
 
-      // Atualiza o cache de maneira otimista
-      queryClient.setQueryData(['users'], [...previousUsers, newUser]);
+      // Verifica se newUser é um objeto e o adiciona ao cache
+      if (typeof newUser === 'object' && !Array.isArray(newUser)) {
+        queryClient.setQueryData(['porteiros'], [...previousUsers, newUser]);
+      } else {
+        console.error('newUser não é um objeto:', newUser);
+      }
 
       return { previousUsers };
     },
     onSettled: () => {
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries(['porteiros']);
     },
     onError: (error, newUser, context) => {
       if (context?.previousUsers) {
-        queryClient.setQueryData(['users'], context.previousUsers);
+        queryClient.setQueryData(['porteiros'], context.previousUsers);
       }
     },
   });
 }
 
+
 //READ hook (get users from api)
 function useGetPorteiros() {
   return useQuery({
-    queryKey: ['users'],
+    queryKey: ['porteiros'],
     queryFn: async () => {
       try {
         const response = await axios.get('http://localhost:8080/porteiros', {
           headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             'Content-Type': 'application/json',
           },
         });
-        return response.data; // Retorna os dados dos usuários obtidos da API
+        return response.data; 
       } catch (error) {
-        console.error('Erro ao buscar usuários:', error.response ? error.response.data : error.message);
+        console.error('Erro ao buscar porteiros:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
         throw error;
       }
     },
-    refetchOnWindowFocus: false, // Não refaz a consulta quando a janela ganha foco
+    refetchOnWindowFocus: false, 
   });
 }
+
 
 //UPDATE hook (put user in api)
 function useUpdatePorteiro() {
@@ -313,41 +318,50 @@ function useUpdatePorteiro() {
   return useMutation({
     mutationFn: async (user) => {
       try {
-        const response = await axios.put(`http://localhost:8080/porteiros/${user.id}`, user, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const response = await axios.put(
+          `http://localhost:8080/porteiros/${user.id}`,
+          user,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`, 
+              'Content-Type': 'application/json',
+            },
+          }
+        );
         return response.data;
       } catch (error) {
-        console.error('Erro ao atualizar usuário:', error.response ? error.response.data : error.message);
-        throw error;
+        console.error('Erro ao atualizar porteiro:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        throw error; 
       }
     },
-    // Atualização otimista do cache
-    onMutate: (newUserInfo) => {
-      const previousUsers = queryClient.getQueryData(['users']) || [];
+    onMutate: async (updatedUser) => {
+      await queryClient.cancelQueries(['porteiros']);
+      const previousUsers = queryClient.getQueryData(['porteiros']) || [];
 
-      queryClient.setQueryData(['users'], (prevUsers) =>
-        prevUsers.map((prevUser) =>
-          prevUser.id === newUserInfo.id ? { ...prevUser, ...newUserInfo } : prevUser
+      queryClient.setQueryData(
+        ['porteiros'],
+        previousUsers.map((user) =>
+          user.id === updatedUser.id ? { ...user, ...updatedUser } : user
         )
       );
 
       return { previousUsers };
     },
-    // Reverte o cache em caso de erro
-    onError: (error, newUserInfo, context) => {
+    onError: (error, updatedUser, context) => {
       if (context?.previousUsers) {
-        queryClient.setQueryData(['users'], context.previousUsers);
+        queryClient.setQueryData(['porteiros'], context.previousUsers); 
       }
     },
-    // Refetch users after mutation to ensure data consistency
     onSettled: () => {
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries(['porteiros']); 
     },
   });
 }
+
 
 //DELETE hook (delete user in api)
 function useDeletePorteiro() {
@@ -358,41 +372,43 @@ function useDeletePorteiro() {
       try {
         await axios.delete(`http://localhost:8080/porteiros/${userId}`, {
           headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             'Content-Type': 'application/json',
           },
         });
+        return; 
       } catch (error) {
-        console.error('Erro ao deletar usuário:', error.response ? error.response.data : error.message);
-        throw error;
+        console.error('Erro ao deletar porteiro:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        throw error; 
       }
     },
-    // Atualização otimista do cache
-    onMutate: (userId) => {
-      const previousUsers = queryClient.getQueryData(['users']) || [];
+    onMutate: async (userId) => {
+      await queryClient.cancelQueries(['porteiros']);
+      const previousUsers = queryClient.getQueryData(['porteiros']) || [];
 
-      queryClient.setQueryData(['users'], (prevUsers) =>
-        prevUsers.filter((user) => user.id !== userId)
-      );
+      queryClient.setQueryData(['porteiros'], previousUsers.filter((user) => user.id !== userId));
 
-      return { previousUsers };
+      return { previousUsers }; 
     },
-    // Reverte o cache em caso de erro
     onError: (error, userId, context) => {
       if (context?.previousUsers) {
-        queryClient.setQueryData(['users'], context.previousUsers);
+        queryClient.setQueryData(['porteiros'], context.previousUsers); 
       }
     },
-    // Refetch users after mutation to ensure data consistency
     onSettled: () => {
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries(['porteiros']);
     },
   });
 }
 
+
 const queryClient = new QueryClient();
 
 const ExampleWithProviders = () => (
-  //Put this with your other react-query providers near root of your app
   <QueryClientProvider client={queryClient}>
     <TablePorteiros />
   </QueryClientProvider>
