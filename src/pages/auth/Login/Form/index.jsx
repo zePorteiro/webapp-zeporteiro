@@ -67,7 +67,7 @@ const FormularioLogin = () => {
       if (response.status === 200 || response.status === 201) {
         toast.success("Login realizado com sucesso!");
         setTimeout(() => {
-          window.location.href = "/cadastrar-encomenda";
+          window.location.href = "/estoque";
         }, 3000);
       }
     } catch (error) {

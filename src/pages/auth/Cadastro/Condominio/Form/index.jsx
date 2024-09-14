@@ -123,7 +123,7 @@ export default function PaginaCondominio() {
       console.log("Resposta do servidor:", response); // Log para depuração
 
       if (response.status === 201) {
-        navigate("/apartamentos");
+        navigate("/login");
       }
     } catch (error) {
       console.error("Erro ao cadastrar condomínio:", error.response ? error.response.data : error.message);
