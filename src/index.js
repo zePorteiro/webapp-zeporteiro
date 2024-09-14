@@ -7,7 +7,6 @@ import SobreNos from "./pages/sidePages/SobreNos/index";
 import Cadastrar from "./pages/auth/Cadastro/index";
 import CadastrarCondominio from "./pages/auth/Cadastro/Condominio/index"
 import ContrateNos from "./pages/sidePages/Contrate/index";
-import CadastroEncomendaCliente from "./pages/client/CadastroEncomenda/index"
 import PaginaInicial from "./pages/client/PaginaInicial/index"
 import Estoque from "./pages/client/Estoque/index"
 import Apartamentos from "./pages/client/Apartamentos/index";
@@ -30,7 +29,6 @@ ReactDOM.createRoot(root).render(
         <Route path="/cadastrar" element={<Cadastrar />} />
         <Route path="/cadastrarcondominio" element={<CadastrarCondominio />} />
         <Route path="/pagina-inicial" element={<PaginaInicial />} />
-        <Route path="/cadastrar-encomenda" element={<CadastroEncomendaCliente />} />
         <Route path="/estoque" element={<Estoque />} />
         <Route path="/apartamentos" element={<Apartamentos />} />
         <Route path="/porteiros" element={<Porteiro />} />
