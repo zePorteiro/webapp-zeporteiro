@@ -27,7 +27,7 @@ import {
 const TableApartamentos = () => {
   const [validationErrors, setValidationErrors] = useState({});
 
-  const { mutateAsync: createApartamentos, isPending: isCreatingApartamentos } = useCreateApartamento(); // Atualize o nome do hook
+  const { mutateAsync: createApartamentos, isPending: isCreatingApartamentos } = useCreateApartamento();
 
   const columns = useMemo(
     () => [
@@ -127,11 +127,10 @@ const TableApartamentos = () => {
       const apartamento = {
         bloco: values.bloco,
         numeroAp: values.numeroAp,
-        vazio: values.vazio !== undefined ? values.vazio : false, // Garante que `vazio` não seja `undefined`
+        vazio: values.vazio !== undefined ? values.vazio : false, 
         condominioId: values.condominioId
       };
       
-      // Adicione um log para verificar o objeto
       console.log('Criando apartamento:', JSON.stringify(apartamento, null, 2));
       
       await createApartamentos(apartamento);
@@ -164,7 +163,7 @@ const TableApartamentos = () => {
       return;
     }
     setValidationErrors({});
-    await handleCreateApartamentos({ values, table }); // Use handleCreateApartamentos aqui
+    await handleCreateApartamentos({ values, table }); 
   };
 
   // UPDATE action
@@ -205,7 +204,7 @@ const TableApartamentos = () => {
       },
     },
     onCreatingRowCancel: () => setValidationErrors({}),
-    onCreatingRowSave: handleCreateApartamentos, // Atualize para usar handleCreateApartamentos
+    onCreatingRowSave: handleCreateApartamentos,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveUser,
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
@@ -272,7 +271,6 @@ function useCreateApartamento() {
   return useMutation({
     mutationFn: async (apartamento) => {
       try {
-        // Adicione o log para verificar o formato do objeto
         console.log('Enviando apartamento:', JSON.stringify(apartamento, null, 2));
 
         const fkUser = sessionStorage.getItem("fkUser") - 1;
@@ -293,7 +291,6 @@ function useCreateApartamento() {
       await queryClient.cancelQueries(['users']);
       const previousUsers = queryClient.getQueryData(['users']) || [];
       
-      // Verifique se newApartamento é um objeto e adicione-o à lista de usuários
       if (typeof newApartamento === 'object' && !Array.isArray(newApartamento)) {
         queryClient.setQueryData(['users'], [...previousUsers, newApartamento]);
       } else {
@@ -312,8 +309,6 @@ function useCreateApartamento() {
     },
   });
 }
-
-
 
 //READ hook (get users from api)
 function useGetApartamentos() {
@@ -340,8 +335,6 @@ function useGetApartamentos() {
   });
 }
 
-
-
 //UPDATE hook (put user in api)
 function useUpdateUser() {
   const queryClient = useQueryClient();
@@ -349,24 +342,23 @@ function useUpdateUser() {
   return useMutation({
     mutationFn: async (user) => {
       try {
-        // Realiza a requisição PUT à API para atualizar o usuário
         const response = await axios.put(
-          `http://localhost:8080/apartamentos/${user.id}`, // Atualize o endpoint da API conforme necessário
+          `http://localhost:8080/apartamentos/${user.id}`, 
           user,
           {
             headers: {
-              Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Inclua o token se a API precisar de autenticação
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`, 
             },
           }
         );
-        return response.data; // Retorna os dados atualizados da API
+        return response.data;
       } catch (error) {
         console.error("Erro ao atualizar usuário:", {
           status: error.response?.status,
           data: error.response?.data,
           message: error.message,
         });
-        throw error; // Lança o erro para ser tratado pelo React Query
+        throw error; 
       }
     },
     onMutate: async (updatedUser) => {
@@ -378,13 +370,13 @@ function useUpdateUser() {
           user.id === updatedUser.id ? updatedUser : user
         )
       );
-      return { previousUsers }; // Retorna o estado anterior para possível rollback
+      return { previousUsers }; 
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["users"]); // Refaz a requisição para garantir que os dados estejam atualizados
+      queryClient.invalidateQueries(["users"]); 
     },
     onError: (error, updatedUser, context) => {
-      queryClient.setQueryData(["users"], context.previousUsers); // Restaura o estado anterior em caso de erro
+      queryClient.setQueryData(["users"], context.previousUsers); 
     },
   });
 }
@@ -396,20 +388,20 @@ function useDeleteUser() {
   return useMutation({
     mutationFn: async (userId) => {
       try {
-        // Realiza a requisição DELETE à API para excluir o usuário
+
         await axios.delete(`http://localhost:8080/apartamentos/${userId}`, {
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Inclua o token se a API precisar de autenticação
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
         });
-        return; // Apenas resolve sem dados, pois a exclusão não retorna um corpo
+        return; 
       } catch (error) {
         console.error("Erro ao excluir usuário:", {
           status: error.response?.status,
           data: error.response?.data,
           message: error.message,
         });
-        throw error; // Lança o erro para ser tratado pelo React Query
+        throw error; 
       }
     },
     onMutate: async (userId) => {
@@ -419,13 +411,13 @@ function useDeleteUser() {
         ["users"],
         previousUsers.filter((user) => user.id !== userId)
       );
-      return { previousUsers }; // Retorna o estado anterior para possível rollback
+      return { previousUsers }; 
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["users"]); // Refaz a requisição para garantir que os dados estejam atualizados
+      queryClient.invalidateQueries(["users"]); 
     },
     onError: (error, userId, context) => {
-      queryClient.setQueryData(["users"], context.previousUsers); // Restaura o estado anterior em caso de erro
+      queryClient.setQueryData(["users"], context.previousUsers); 
     },
   });
 }
@@ -433,7 +425,6 @@ function useDeleteUser() {
 const queryClient = new QueryClient();
 
 const ExampleWithProviders = () => (
-  //Put this with your other react-query providers near root of your app
   <QueryClientProvider client={queryClient}>
     <TableApartamentos />
   </QueryClientProvider>

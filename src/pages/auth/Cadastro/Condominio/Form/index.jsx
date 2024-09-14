@@ -4,8 +4,8 @@ import { Formulario, ErrorPopup, Botao } from "./styles";
 import { CampoInputCadastro, InputCadastro, Label } from "../../Inputs/styles";
 import { useNavigate } from "react-router-dom";
 import { validarCEP, validarNumero, validarPreenchido } from "../../../../../utils/formValidation";
-import { ToastContainer, toast } from "react-toastify"; // Adicione esta linha
-import 'react-toastify/dist/ReactToastify.css'; // Adicione esta linha
+import { ToastContainer, toast } from "react-toastify"; 
+import 'react-toastify/dist/ReactToastify.css'; 
 
 export default function PaginaCondominio() {
   const [cep, setCep] = useState("");
@@ -68,7 +68,7 @@ export default function PaginaCondominio() {
     const numeroInput = event.target.value;
     if (!validarNumero(numeroInput)) {
       setError("Apenas números são permitidos");
-      setNumero(""); // Definir como string vazia se a entrada for inválida
+      setNumero(""); 
     } else {
       setError("");
       setNumero(numeroInput);
@@ -120,7 +120,7 @@ export default function PaginaCondominio() {
 
 
 
-      console.log("Resposta do servidor:", response); // Log para depuração
+      console.log("Resposta do servidor:", response);
 
       if (response.status === 201) {
         navigate("/login");
