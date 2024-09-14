@@ -27,7 +27,7 @@ import {
 const TableApartamentos = () => {
   const [validationErrors, setValidationErrors] = useState({});
 
-  const { mutateAsync: createApartamentos, isPending: isCreatingApartamentos } = useCreateApartamento();
+  const { mutateAsync: createApartamentos, isPending: isCreatingApartamentos } = useCreateApartamento(); // Atualize o nome do hook
 
   const columns = useMemo(
     () => [
