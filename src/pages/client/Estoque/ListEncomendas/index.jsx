@@ -1,30 +1,12 @@
+// TableEntregas.js
 import { useMemo, useState } from "react";
-import axios from "axios";
-import {
-  MRT_EditActionButtons,
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
-import {
-  Box,
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Box, Button, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip, TextField, Grid } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { validateEntrega } from "./validations";
+import { MRT_EditActionButtons, MaterialReactTable, useMaterialReactTable } from "material-react-table";
+import { useCreateEntrega, useUpdateEntrega, useDeleteEntrega, useGetEntregas } from "./hooks/entregasHooks"; 
 
+import { validateEntrega } from "./validations";
 
 const TableEntregas = () => {
   const [validationErrors, setValidationErrors] = useState({});
@@ -275,142 +257,4 @@ const TableEntregas = () => {
   return <MaterialReactTable table={table} />;
 };
 
-// Requisições (POST, PUT, DELETE, GET)
-function useCreateEntrega() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (newEntrega) => {
-      try {
-        const response = await axios.post(
-          'http://localhost:8080/entregas',
-          newEntrega,
-          {
-            headers: {
-              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (response.status === 201) {
-          return response.data;
-        } else {
-          throw new Error('Erro ao criar entrega');
-        }
-      } catch (error) {
-        console.error('Erro ao criar entrega:', error);
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['entregas']);
-    },
-  });
-}
-
-// UPDATE hook
-function useUpdateEntrega() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (updatedEntrega) => {
-      try {
-        const response = await axios.patch(
-          `http://localhost:8080/entregas/${updatedEntrega.id}`,
-          updatedEntrega,
-          {
-            headers: {
-              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (response.status === 200) {
-          return response.data;
-        } else {
-          throw new Error('Erro ao atualizar entrega');
-        }
-      } catch (error) {
-        console.error('Erro ao atualizar entrega:', error);
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['entregas']);
-    },
-  });
-}
-
-// DELETE hook
-function useDeleteEntrega() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id) => {
-      try {
-        const response = await axios.delete(
-          `http://localhost:8080/entregas/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (response.status === 204) {
-          return true;
-        } else {
-          throw new Error('Erro ao deletar entrega');
-        }
-      } catch (error) {
-        console.error('Erro ao deletar entrega:', error);
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['entregas']);
-    },
-  });
-}
-
-function useGetEntregas() {
-  return useQuery({
-    queryKey: ['entregas'],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(
-          'http://localhost:8080/entregas/pendentes',
-          {
-            headers: {
-              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (response.status === 200) {
-          return response.data;
-        } else {
-          throw new Error('Erro ao buscar entregas');
-        }
-      } catch (error) {
-        console.error('Erro ao buscar entregas:', error);
-        throw error;
-      }
-    },
-    onError: (error) => {
-      console.error('Erro ao carregar entregas:', error);
-    },
-  });
-}
-
-const App = () => {
-  const queryClient = new QueryClient();
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TableEntregas />
-    </QueryClientProvider>
-  );
-};
-
-export default App;
+export default TableEntregas;
