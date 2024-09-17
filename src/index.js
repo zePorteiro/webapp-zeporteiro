@@ -12,13 +12,16 @@ import Estoque from "./pages/client/Estoque/index"
 import Apartamentos from "./pages/client/Apartamentos/index";
 import Porteiro from "./pages/client/Porteiro/index"
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 const root = document.getElementById("root");
+const queryClient = new QueryClient();
 
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
     <GlobalStyle />
     <Router>
       <Routes>
@@ -34,5 +37,6 @@ ReactDOM.createRoot(root).render(
         <Route path="/porteiros" element={<Porteiro />} />
       </Routes>
     </Router>
+    </QueryClientProvider>
   </React.StrictMode>
 );

@@ -88,48 +88,74 @@ export default function PaginaCondominio() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    
+    // Validação dos campos
     if (
       !validarCEP(cep) ||
       !validarNumero(numero) ||
       !validarPreenchido(logradouro) ||
       !validarPreenchido(bairro) ||
-      !validarPreenchido(cidade)
+      !validarPreenchido(cidade) ||
+      !validarPreenchido(nome)
     ) {
       setError("Por favor, preencha todos os campos corretamente.");
       return;
     }
-
+  
     try {
+
+      const dadosCondominio = {
+        nome,
+        cep,
+        logradouro,
+        numero,
+        bairro,
+        cidade,
+        fkCliente: sessionStorage.getItem("fkUser"), 
+      };
+  
+      // Fazendo a requisição para a API
       const response = await axios.post(
         "http://localhost:8080/condominios",
-        {
-          nome,
-          cep,
-          logradouro,
-          numero,
-          bairro,
-          cidade,
-          fkCliente: sessionStorage.getItem("fkUser"),
-        },
+        dadosCondominio,
         {
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`, 
           },
         }
       );
-
-
-
+  
       console.log("Resposta do servidor:", response);
+  
 
       if (response.status === 201) {
         navigate("/login");
+      } else {
+
+        setError("Erro inesperado ao cadastrar condomínio.");
       }
     } catch (error) {
-      console.error("Erro ao cadastrar condomínio:", error.response ? error.response.data : error.message);
-      setError("Erro ao cadastrar condomínio. Por favor, tente novamente.");
+
+      if (error.response) {
+
+        console.error("Erro ao cadastrar condomínio:", error.response.data);
+        if (error.response.status === 401) {
+          setError("Acesso não autorizado. Verifique suas credenciais.");
+        } else {
+          setError(`Erro ao cadastrar condomínio: ${error.response.data.message || error.response.data}`);
+        }
+      } else if (error.request) {
+
+        console.error("Erro na requisição:", error.request);
+        setError("Não foi possível se conectar ao servidor. Tente novamente mais tarde.");
+      } else {
+
+        console.error("Erro ao configurar a requisição:", error.message);
+        setError("Erro ao configurar a requisição. Por favor, tente novamente.");
+      }
     }
   };
+  
 
   const isFormValid =
     validarCEP(cep) &&

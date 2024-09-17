@@ -1,16 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-// CREATE
 function useCreatePorteiro() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (newPorteiro) => {
       try {
+        const fkUser = sessionStorage.getItem('fkUser');
+        const condominioIdProvisorio = fkUser ? Number(fkUser) - 1 : null; // Converte para número e ajusta
         const response = await axios.post(
           'http://localhost:8080/porteiros',
-          newPorteiro,
+          {
+            condominioId: condominioIdProvisorio,
+            nome: newPorteiro.nome,
+            rg: newPorteiro.rg,
+            senha: newPorteiro.senha
+          },
           {
             headers: {
               Authorization: `Bearer ${sessionStorage.getItem('token')}`,
@@ -22,15 +28,21 @@ function useCreatePorteiro() {
         if (response.status === 201) {
           return response.data;
         } else {
-          throw new Error('Erro ao criar porteiro');
+          // Melhorar o tratamento de erros para retornar uma mensagem mais útil
+          throw new Error(`Erro ao criar porteiro: ${response.statusText}`);
         }
       } catch (error) {
         console.error('Erro ao criar porteiro:', error);
-        throw error;
+        throw new Error(error.response?.data?.message || 'Erro desconhecido ao criar porteiro');
       }
     },
     onSuccess: () => {
+      // Invalida a query dos porteiros para garantir que os dados mais recentes sejam carregados
       queryClient.invalidateQueries(['porteiros']);
+    },
+    onError: (error) => {
+      // Lida com o erro, pode incluir uma notificação para o usuário
+      console.error('Erro ao criar porteiro:', error);
     },
   });
 }
@@ -107,8 +119,10 @@ function useGetPorteiros() {
     queryKey: ['porteiros'],
     queryFn: async () => {
       try {
+        const fkUser = sessionStorage.getItem('fkUser');
+        const condominioIdProvisorio = fkUser ? Number(fkUser) - 1 : null; // Converte para número e ajusta
         const response = await axios.get(
-          'http://localhost:8080/porteiros',
+          `http://localhost:8080/porteiros/condominio/${condominioIdProvisorio}`,
           {
             headers: {
               Authorization: `Bearer ${sessionStorage.getItem('token')}`,

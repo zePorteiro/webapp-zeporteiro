@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
@@ -8,7 +9,7 @@ export const useGetCondominios = () => {
       const token = sessionStorage.getItem('token');
       
       try {
-        const response = await axios.get('/condominios', {
+        const response = await axios.get('http://localhost:8080/condominios', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
