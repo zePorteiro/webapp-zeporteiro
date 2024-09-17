@@ -13,7 +13,6 @@ import {
   IconButton,
   Tooltip,
   TextField,
-  Autocomplete,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -24,14 +23,27 @@ const handleError = (error) => {
   console.error('Error:', error.response ? error.response.data : error.message);
 };
 
+const validateForm = (values) => {
+  const errors = {};
+  // Validação do nome
+  if (!values.nome) errors.nome = 'Nome é obrigatório';
+  // Validação do RG
+  if (!values.rg) errors.rg = 'RG é obrigatório';
+  else if (!/^\d{1,9}$/.test(values.rg)) errors.rg = 'RG deve conter apenas números e ter no máximo 9 dígitos';
+  // Validação da senha
+  if (!values.senha) errors.senha = 'Senha é obrigatória';
+  else if (values.senha.length < 6 || values.senha.length > 20) errors.senha = 'Senha deve ter entre 6 e 20 caracteres';
+  // Validação do ID do condomínio
+  if (!values.condominioId) errors.condominioId = 'Condomínio é obrigatório';
+  return errors;
+};
+
 const TablePorteiros = () => {
   const [validationErrors, setValidationErrors] = useState({});
-  const [selectedCondominioId, setSelectedCondominioId] = useState(null);
+  const [selectedCondominioId, setSelectedCondominioId] = useState('');
 
-  // Fetch condomínios
   const { data: condominios = [] } = useGetCondominios();
 
-  // Hooks for CRUD operations
   const { mutateAsync: createPorteiro, isPending: isCreatingPorteiro } = useCreatePorteiro();
   const {
     data: fetchedPorteiros = [],
@@ -42,18 +54,12 @@ const TablePorteiros = () => {
   const { mutateAsync: updatePorteiro, isPending: isUpdatingPorteiro } = useUpdatePorteiro();
   const { mutateAsync: deletePorteiro, isPending: isDeletingPorteiro } = useDeletePorteiro();
 
-  const validateForm = (values) => {
-    const errors = {};
-    if (!values.nome) errors.nome = 'Nome é obrigatório';
-    if (!values.rg) errors.rg = 'RG é obrigatório';
-    if (!values.senha) errors.senha = 'Senha é obrigatória';
-    if (!selectedCondominioId) errors.condominioId = 'Condomínio é obrigatório';
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
   const handleCreatePorteiro = async ({ values, table }) => {
-    if (!validateForm(values)) return;
+    const errors = validateForm(values);
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
     try {
       await createPorteiro({ ...values, condominioId: selectedCondominioId });
       table.setCreatingRow(null);
@@ -63,7 +69,11 @@ const TablePorteiros = () => {
   };
 
   const handleSavePorteiro = async ({ values, table }) => {
-    if (!validateForm(values)) return;
+    const errors = validateForm(values);
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
     try {
       await updatePorteiro({ ...values, condominioId: selectedCondominioId });
       table.setEditingRow(null);
@@ -85,20 +95,13 @@ const TablePorteiros = () => {
   const table = useMaterialReactTable({
     columns: useMemo(() => [
       {
-        accessorKey: 'id',
-        header: 'Id',
-        enableEditing: false,
-        size: 80,
-      },
-      {
         accessorKey: 'nome',
         header: 'Nome',
         muiEditTextFieldProps: {
           required: true,
-          error: !!validationErrors?.nome,
-          helperText: validationErrors?.nome,
-          onFocus: () =>
-            setValidationErrors((prev) => ({ ...prev, nome: undefined })),
+          error: !!validationErrors.nome,
+          helperText: validationErrors.nome,
+          onFocus: () => setValidationErrors((prev) => ({ ...prev, nome: undefined })),
         },
       },
       {
@@ -106,10 +109,9 @@ const TablePorteiros = () => {
         header: 'RG',
         muiEditTextFieldProps: {
           required: true,
-          error: !!validationErrors?.rg,
-          helperText: validationErrors?.rg,
-          onFocus: () =>
-            setValidationErrors((prev) => ({ ...prev, rg: undefined })),
+          error: !!validationErrors.rg,
+          helperText: validationErrors.rg,
+          onFocus: () => setValidationErrors((prev) => ({ ...prev, rg: undefined })),
         },
       },
       {
@@ -118,10 +120,9 @@ const TablePorteiros = () => {
         muiEditTextFieldProps: {
           type: 'password',
           required: true,
-          error: !!validationErrors?.senha,
-          helperText: validationErrors?.senha,
-          onFocus: () =>
-            setValidationErrors((prev) => ({ ...prev, senha: undefined })),
+          error: !!validationErrors.senha,
+          helperText: validationErrors.senha,
+          onFocus: () => setValidationErrors((prev) => ({ ...prev, senha: undefined })),
         },
       },
       {
@@ -130,13 +131,12 @@ const TablePorteiros = () => {
         muiEditTextFieldProps: {
           type: 'number',
           required: true,
-          error: !!validationErrors?.condominioId,
-          helperText: validationErrors?.condominioId,
-          onFocus: () =>
-            setValidationErrors((prev) => ({ ...prev, condominioId: undefined })),
+          error: !!validationErrors.condominioId,
+          helperText: validationErrors.condominioId,
+          onFocus: () => setValidationErrors((prev) => ({ ...prev, condominioId: undefined })),
         },
       },
-    ], [validationErrors, condominios]),
+    ], [validationErrors]),
     data: fetchedPorteiros,
     createDisplayMode: 'modal',
     editDisplayMode: 'modal',
@@ -155,12 +155,12 @@ const TablePorteiros = () => {
     },
     onCreatingRowCancel: () => {
       setValidationErrors({});
-      setSelectedCondominioId(null);
+      setSelectedCondominioId('');
     },
     onCreatingRowSave: handleCreatePorteiro,
     onEditingRowCancel: () => {
       setValidationErrors({});
-      setSelectedCondominioId(null);
+      setSelectedCondominioId('');
     },
     onEditingRowSave: handleSavePorteiro,
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
@@ -169,13 +169,6 @@ const TablePorteiros = () => {
         <DialogContent
           sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
         >
-          <Autocomplete
-            options={condominios}
-            getOptionLabel={(option) => option.nome}
-            value={condominios.find((condominio) => condominio.id === selectedCondominioId) || null}
-            onChange={(event, newValue) => setSelectedCondominioId(newValue ? newValue.id : null)}
-            renderInput={(params) => <TextField {...params} label="Condomínio" />}
-          />
           {internalEditComponents}
         </DialogContent>
         <DialogActions>
@@ -189,13 +182,6 @@ const TablePorteiros = () => {
         <DialogContent
           sx={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
         >
-          <Autocomplete
-            options={condominios}
-            getOptionLabel={(option) => option.nome}
-            value={condominios.find((condominio) => condominio.id === selectedCondominioId) || null}
-            onChange={(event, newValue) => setSelectedCondominioId(newValue ? newValue.id : null)}
-            renderInput={(params) => <TextField {...params} label="Condomínio" />}
-          />
           {internalEditComponents}
         </DialogContent>
         <DialogActions>
