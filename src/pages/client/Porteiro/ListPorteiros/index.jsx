@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useMemo, useState } from 'react';
 import {
   MRT_EditActionButtons,
@@ -16,26 +15,75 @@ import {
   TextField,
   Autocomplete,
 } from '@mui/material';
-import {
-  QueryClient,
-  QueryClientProvider,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { validateUser } from './validations';
+import { useCreatePorteiro, useGetPorteiros, useUpdatePorteiro, useDeletePorteiro } from '../hooks/porteiroHooks';
+import { useGetCondominios } from '../hooks/useGetCondominios';
+
+const handleError = (error) => {
+  console.error('Error:', error.response ? error.response.data : error.message);
+};
 
 const TablePorteiros = () => {
   const [validationErrors, setValidationErrors] = useState({});
-  const [selectedCondominio, setSelectedCondominio] = useState(null);
+  const [selectedCondominioId, setSelectedCondominioId] = useState(null);
 
-  // Call READ hook for condomínios
+  // Fetch condomínios
   const { data: condominios = [] } = useGetCondominios();
 
-  const columns = useMemo(
-    () => [
+  // Hooks for CRUD operations
+  const { mutateAsync: createPorteiro, isPending: isCreatingPorteiro } = useCreatePorteiro();
+  const {
+    data: fetchedPorteiros = [],
+    isError: isLoadingPorteirosError,
+    isFetching: isFetchingPorteiros,
+    isLoading: isLoadingPorteiros,
+  } = useGetPorteiros();
+  const { mutateAsync: updatePorteiro, isPending: isUpdatingPorteiro } = useUpdatePorteiro();
+  const { mutateAsync: deletePorteiro, isPending: isDeletingPorteiro } = useDeletePorteiro();
+
+  const validateForm = (values) => {
+    const errors = {};
+    if (!values.nome) errors.nome = 'Nome é obrigatório';
+    if (!values.rg) errors.rg = 'RG é obrigatório';
+    if (!values.senha) errors.senha = 'Senha é obrigatória';
+    if (!selectedCondominioId) errors.condominioId = 'Condomínio é obrigatório';
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleCreatePorteiro = async ({ values, table }) => {
+    if (!validateForm(values)) return;
+    try {
+      await createPorteiro({ ...values, condominioId: selectedCondominioId });
+      table.setCreatingRow(null);
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  const handleSavePorteiro = async ({ values, table }) => {
+    if (!validateForm(values)) return;
+    try {
+      await updatePorteiro({ ...values, condominioId: selectedCondominioId });
+      table.setEditingRow(null);
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  const handleDeletePorteiro = async (id) => {
+    if (window.confirm('Tem certeza que deseja excluir esse porteiro?')) {
+      try {
+        await deletePorteiro(id);
+      } catch (error) {
+        handleError(error);
+      }
+    }
+  };
+
+  const table = useMaterialReactTable({
+    columns: useMemo(() => [
       {
         accessorKey: 'id',
         header: 'Id',
@@ -50,10 +98,7 @@ const TablePorteiros = () => {
           error: !!validationErrors?.nome,
           helperText: validationErrors?.nome,
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              nome: undefined,
-            }),
+            setValidationErrors((prev) => ({ ...prev, nome: undefined })),
         },
       },
       {
@@ -64,25 +109,7 @@ const TablePorteiros = () => {
           error: !!validationErrors?.rg,
           helperText: validationErrors?.rg,
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              rg: undefined,
-            }),
-        },
-      },
-      {
-        accessorKey: 'email',
-        header: 'Email',
-        muiEditTextFieldProps: {
-          type: 'email',
-          required: true,
-          error: !!validationErrors?.email,
-          helperText: validationErrors?.email,
-          onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              email: undefined,
-            }),
+            setValidationErrors((prev) => ({ ...prev, rg: undefined })),
         },
       },
       {
@@ -94,63 +121,22 @@ const TablePorteiros = () => {
           error: !!validationErrors?.senha,
           helperText: validationErrors?.senha,
           onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              senha: undefined,
-            }),
+            setValidationErrors((prev) => ({ ...prev, senha: undefined })),
         },
       },
-    ],
-    [validationErrors],
-  );
-
-  // Call CREATE hook
-  const { mutateAsync: createPorteiro, isPending: isCreatingPorteiro } = useCreatePorteiro();
-  // Call READ hook
-  const {
-    data: fetchedPorteiros = [],
-    isError: isLoadingPorteirosError,
-    isFetching: isFetchingPorteiros,
-    isLoading: isLoadingPorteiros,
-  } = useGetPorteiros();
-  // Call UPDATE hook
-  const { mutateAsync: updatePorteiro, isPending: isUpdatingPorteiro } = useUpdatePorteiro();
-  // Call DELETE hook
-  const { mutateAsync: deletePorteiro, isPending: isDeletingPorteiro } = useDeletePorteiro();
-
-  // CREATE action
-  const handleCreatePorteiro = async ({ values, table }) => {
-    const newValidationErrors = validateUser(values);
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
-    setValidationErrors({});
-    await createPorteiro({ ...values, condominio: selectedCondominio });
-    table.setCreatingRow(null);
-  };
-
-  // UPDATE action
-  const handleSavePorteiro = async ({ values, table }) => {
-    const newValidationErrors = validateUser(values);
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
-    setValidationErrors({});
-    await updatePorteiro({ ...values, condominio: selectedCondominio });
-    table.setEditingRow(null);
-  };
-
-  // DELETE action
-  const openDeleteConfirmModal = (row) => {
-    if (window.confirm('Tem certeza que deseja excluir esse porteiro?')) {
-      deletePorteiro(row.original.id);
-    }
-  };
-
-  const table = useMaterialReactTable({
-    columns,
+      {
+        accessorKey: 'condominioId',
+        header: 'Condomínio',
+        muiEditTextFieldProps: {
+          type: 'number',
+          required: true,
+          error: !!validationErrors?.condominioId,
+          helperText: validationErrors?.condominioId,
+          onFocus: () =>
+            setValidationErrors((prev) => ({ ...prev, condominioId: undefined })),
+        },
+      },
+    ], [validationErrors, condominios]),
     data: fetchedPorteiros,
     createDisplayMode: 'modal',
     editDisplayMode: 'modal',
@@ -169,15 +155,14 @@ const TablePorteiros = () => {
     },
     onCreatingRowCancel: () => {
       setValidationErrors({});
-      setSelectedCondominio(null);
+      setSelectedCondominioId(null);
     },
     onCreatingRowSave: handleCreatePorteiro,
     onEditingRowCancel: () => {
       setValidationErrors({});
-      setSelectedCondominio(null);
+      setSelectedCondominioId(null);
     },
     onEditingRowSave: handleSavePorteiro,
-
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
         <DialogTitle variant="h3">Adicionar Porteiro</DialogTitle>
@@ -187,8 +172,8 @@ const TablePorteiros = () => {
           <Autocomplete
             options={condominios}
             getOptionLabel={(option) => option.nome}
-            value={selectedCondominio}
-            onChange={(event, newValue) => setSelectedCondominio(newValue)}
+            value={condominios.find((condominio) => condominio.id === selectedCondominioId) || null}
+            onChange={(event, newValue) => setSelectedCondominioId(newValue ? newValue.id : null)}
             renderInput={(params) => <TextField {...params} label="Condomínio" />}
           />
           {internalEditComponents}
@@ -207,8 +192,8 @@ const TablePorteiros = () => {
           <Autocomplete
             options={condominios}
             getOptionLabel={(option) => option.nome}
-            value={selectedCondominio}
-            onChange={(event, newValue) => setSelectedCondominio(newValue)}
+            value={condominios.find((condominio) => condominio.id === selectedCondominioId) || null}
+            onChange={(event, newValue) => setSelectedCondominioId(newValue ? newValue.id : null)}
             renderInput={(params) => <TextField {...params} label="Condomínio" />}
           />
           {internalEditComponents}
@@ -226,7 +211,7 @@ const TablePorteiros = () => {
           </IconButton>
         </Tooltip>
         <Tooltip title="Delete">
-          <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
+          <IconButton color="error" onClick={() => handleDeletePorteiro(row.original.id)}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
@@ -251,159 +236,4 @@ const TablePorteiros = () => {
   return <MaterialReactTable table={table} />;
 };
 
-// CREATE hook (post new porteiro to API)
-function useCreatePorteiro() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (porteiro) => {
-      try {
-        const response = await axios.post('http://localhost:8080/porteiros', porteiro, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        return response.data;
-      } catch (error) {
-        console.error('Erro ao criar porteiro:', error.response ? error.response.data : error.message);
-        throw error;
-      }
-    },
-    onMutate: async (newPorteiro) => {
-      await queryClient.cancelQueries(['users']);
-      const previousPorteiros = queryClient.getQueryData(['users']) || [];
-
-      queryClient.setQueryData(['users'], [...previousPorteiros, newPorteiro]);
-
-      return { previousPorteiros };
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(['users']);
-    },
-  });
-}
-
-// READ hook (get all porteiros from API)
-function useGetPorteiros() {
-  return useQuery({
-    queryKey: ['users'],
-    queryFn: async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/porteiros', {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        return response.data;
-      } catch (error) {
-        console.error('Erro ao buscar porteiros:', error.response ? error.response.data : error.message);
-        throw error;
-      }
-    },
-  });
-}
-
-// UPDATE hook (update existing porteiro in API)
-function useUpdatePorteiro() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (porteiro) => {
-      try {
-        const response = await axios.put(`http://localhost:8080/porteiros/${porteiro.id}`, porteiro, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        return response.data;
-      } catch (error) {
-        console.error('Erro ao atualizar porteiro:', error.response ? error.response.data : error.message);
-        throw error;
-      }
-    },
-    onMutate: async (updatedPorteiro) => {
-      await queryClient.cancelQueries(['users']);
-      const previousPorteiros = queryClient.getQueryData(['users']) || [];
-
-      queryClient.setQueryData(
-        ['users'],
-        previousPorteiros.map((p) =>
-          p.id === updatedPorteiro.id ? updatedPorteiro : p
-        )
-      );
-
-      return { previousPorteiros };
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(['users']);
-    },
-  });
-}
-
-// DELETE hook (delete existing porteiro from API)
-function useDeletePorteiro() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (porteiroId) => {
-      try {
-        await axios.delete(`http://localhost:8080/porteiros/${porteiroId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        return porteiroId;
-      } catch (error) {
-        console.error('Erro ao excluir porteiro:', error.response ? error.response.data : error.message);
-        throw error;
-      }
-    },
-    onMutate: async (deletedPorteiroId) => {
-      await queryClient.cancelQueries(['users']);
-      const previousPorteiros = queryClient.getQueryData(['users']) || [];
-
-      queryClient.setQueryData(
-        ['users'],
-        previousPorteiros.filter((p) => p.id !== deletedPorteiroId)
-      );
-
-      return { previousPorteiros };
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(['users']);
-    },
-  });
-}
-
-// READ hook for condomínios
-function useGetCondominios() {
-  return useQuery({
-    queryKey: ['condominios'],
-    queryFn: async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/condominios', {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        return response.data;
-      } catch (error) {
-        console.error('Erro ao buscar condomínios:', error.response ? error.response.data : error.message);
-        throw error;
-      }
-    },
-  });
-}
-
-// Wrap TablePorteiros with QueryClientProvider
-const App = () => {
-  const queryClient = new QueryClient();
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TablePorteiros />
-    </QueryClientProvider>
-  );
-};
-
-export default App;
+export default TablePorteiros;
