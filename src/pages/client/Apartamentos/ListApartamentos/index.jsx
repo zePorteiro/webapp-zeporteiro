@@ -22,8 +22,8 @@ import { useCreateApartamento, useGetApartamentos, useUpdateApartamento, useDele
 
 const TableApartamentos = () => {
   const [validationErrors, setValidationErrors] = useState({});
-  const [openCreateModal, setOpenCreateModal] = useState(false); // Estado para controlar o modal de criação
-  const [newApartamento, setNewApartamento] = useState({ // Estado para armazenar os dados do novo apartamento
+  const [openCreateModal, setOpenCreateModal] = useState(false); 
+  const [newApartamento, setNewApartamento] = useState({ 
     numAp: '',
     bloco: '',
     vazio: false,
