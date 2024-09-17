@@ -1,51 +1,47 @@
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
-
+import { jwtDecode } from 'jwt-decode'; // Corrigir a importação
 const localHost = 'http://localhost:8080/';
 
 class AuthService {
   async login(email, senha) {
-    try {
+  try {
       const response = await axios.post(`${localHost}clientes/login`, { email, senha });
-      const { token, user } = response.data;
+      //const token = response.data.token;
 
-      sessionStorage.setItem('token', token);
-      sessionStorage.setItem('user', JSON.stringify(user));
 
-      window.location.href = "/estoque";
+      window.location.href = "/cadastrar-encomenda";
+
     } catch (error) {
-      this.handleLoginError(error);
-    }
-  }
-
-  handleLoginError(error) {
-    console.error("Erro ao fazer login:", error);
-    if (error.response) {
-      if (error.response.status === 401) {
-        console.error("Credenciais inválidas. Por favor, tente novamente.");
-      } else {
-        console.error("Detalhes do erro:", error.response.data);
+      console.error("Erro ao fazer login:", error);
+      if (error.response) {
+        if (error.response.status === 401) {
+          console.error("Credenciais inválidas. Por favor, tente novamente.");
+        }
+        else {
+          console.error("Detalhes do erro:", error.response.data);
+        }
       }
     }
   }
 
   getCurrentUser() {
-    const user = sessionStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    return JSON.parse(localStorage.getItem('user'));
   }
 
   logout() {
-    sessionStorage.removeItem('user');
+    localStorage.removeItem('user');
     sessionStorage.removeItem('token');
+    sessionStorage.removeItem('userId');
+    sessionStorage.removeItem('fkUser');
+
     window.location.href = '/login';
   }
 
   isAuthenticated() {
     const user = this.getCurrentUser();
-    const token = sessionStorage.getItem('token');
-    if (user && token) {
+    if (user && user.token) {
       try {
-        const decodedToken = jwtDecode(token);
+        const decodedToken = jwtDecode(user.token);
         return decodedToken.exp > Date.now() / 1000;
       } catch (error) {
         console.error("Token inválido:", error);
@@ -57,15 +53,9 @@ class AuthService {
 
   getRoles() {
     const user = this.getCurrentUser();
-    const token = sessionStorage.getItem('token');
-    if (user && token) {
-      try {
-        const decodedToken = jwtDecode(token);
-        return decodedToken.roles || [];
-      } catch (error) {
-        console.error("Erro ao decodificar o token:", error);
-        return [];
-      }
+    if (user && user.token) {
+      const decodedToken = jwtDecode(user.token);
+      return decodedToken.roles || [];
     }
     return [];
   }
@@ -75,14 +65,12 @@ class AuthService {
   }
 
   getAuthHeader() {
-    const token = sessionStorage.getItem('token');
-    if (token) {
-      return { Authorization: `Bearer ${token}` };
+    const user = this.getCurrentUser();
+    if (user && user.token) {
+      return { Authorization: `Bearer ${user.token}` };
     }
     return {};
   }
 }
 
-const authServiceInstance = new AuthService();
-
-export default authServiceInstance;
+export default new AuthService();
