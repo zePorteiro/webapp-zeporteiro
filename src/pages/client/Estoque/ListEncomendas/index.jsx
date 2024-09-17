@@ -23,7 +23,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { validateEntrega } from "./validations"; 
+import { validateEntrega } from "./validations";
+
 
 const TableEntregas = () => {
   const [validationErrors, setValidationErrors] = useState({});
@@ -31,6 +32,8 @@ const TableEntregas = () => {
   const { mutateAsync: createEntrega, isLoading: isCreatingEntrega } = useCreateEntrega();
   const { mutateAsync: updateEntrega, isLoading: isUpdatingEntrega } = useUpdateEntrega();
   const { mutateAsync: deleteEntrega, isLoading: isDeletingEntrega } = useDeleteEntrega();
+  
+  const { data: fetchedEntregas = [], isLoading: isLoadingEntregas, isError: isLoadingEntregasError, isFetching: isFetchingEntregas } = useGetEntregas();
 
   const columns = useMemo(
     () => [
@@ -41,11 +44,10 @@ const TableEntregas = () => {
           required: true,
           error: !!validationErrors?.tipoEntrega,
           helperText: validationErrors?.tipoEntrega,
-          onFocus: () =>
-            setValidationErrors((prevErrors) => ({
-              ...prevErrors,
-              tipoEntrega: undefined,
-            })),
+          onFocus: () => setValidationErrors((prevErrors) => ({
+            ...prevErrors,
+            tipoEntrega: undefined,
+          })),
         },
       },
       {
@@ -56,22 +58,20 @@ const TableEntregas = () => {
           required: true,
           error: !!validationErrors?.dataRecebimentoPorteiro,
           helperText: validationErrors?.dataRecebimentoPorteiro,
-          onFocus: () =>
-            setValidationErrors((prevErrors) => ({
-              ...prevErrors,
-              dataRecebimentoPorteiro: undefined,
-            })),
+          onFocus: () => setValidationErrors((prevErrors) => ({
+            ...prevErrors,
+            dataRecebimentoPorteiro: undefined,
+          })),
         },
       },
       {
         accessorKey: 'dataRecebimentoMorador',
         header: 'Data de Recebimento do Morador',
         muiTableBodyCellProps: {
-          sx: {
-            textAlign: 'center',
-          },
+          sx: { textAlign: 'center' },
         },
         muiEditTextFieldProps: {
+          required: false,
           type: 'date',
           disabled: true,
           error: !!validationErrors?.dataRecebimentoMorador,
@@ -82,12 +82,11 @@ const TableEntregas = () => {
         accessorKey: 'recebido',
         header: 'Recebido',
         muiTableBodyCellProps: {
-          sx: {
-            textAlign: 'center',
-          },
+          sx: { textAlign: 'center' },
         },
         muiEditTextFieldProps: {
-          type: 'checkbox',
+          type: 'text',
+          required: false,
           disabled: true,
           error: !!validationErrors?.recebido,
           helperText: validationErrors?.recebido,
@@ -98,17 +97,19 @@ const TableEntregas = () => {
         header: 'Apartamento ID',
         muiTableBodyCellEditTextFieldProps: {
           type: 'number',
-          required: false,
-          disabled: true,
+          required: true,
+          disabled: false,
         },
       },
       {
         accessorKey: 'porteiro.nome',
         header: 'Nome do Porteiro',
+        muiTableBodyCellEditTextFieldProps: {
+          required: true,
+          disabled: false,
+        },
         muiTableBodyCellProps: {
-          sx: {
-            textAlign: 'center',
-          },
+          sx: { textAlign: 'center' },
         },
       }
     ],
@@ -117,54 +118,57 @@ const TableEntregas = () => {
 
   const handleCreateEntrega = async ({ values, table }) => {
     try {
+      console.log("Iniciando criação de entrega:", values);
       const entrega = {
         tipoEntrega: values.tipoEntrega,
         dataRecebimentoPorteiro: values.dataRecebimentoPorteiro,
-        // Campos 'dataRecebimentoMorador' e 'recebido' não devem ser incluídos aqui
         apartamento: { id: values.apartamentoId },
         porteiro: { id: values.porteiroId },
       };
-
+  
       await createEntrega(entrega);
       table.setCreatingRow(null);
     } catch (error) {
       console.error('Erro ao criar entrega:', error);
     }
   };
-
+  
   const handleCreateEntregaAction = async ({ values, table }) => {
     const newValidationErrors = validateEntrega(values);
     if (Object.values(newValidationErrors).some((error) => error)) {
+      console.log("Erros de validação:", newValidationErrors);
       setValidationErrors(newValidationErrors);
       return;
     }
+    console.log("Validação concluída, iniciando salvamento");
     setValidationErrors({});
     await handleCreateEntrega({ values, table });
   };
-
+  
   const handleSaveEntrega = async ({ values, table }) => {
     const newValidationErrors = validateEntrega(values);
     if (Object.values(newValidationErrors).some((error) => error)) {
+      console.log("Erros de validação:", newValidationErrors); 
       setValidationErrors(newValidationErrors);
       return;
     }
+    console.log("Validação concluída, iniciando atualização");
     setValidationErrors({});
-    await updateEntrega(values);
-    table.setEditingRow(null);
+    
+    try {
+      await updateEntrega(values);
+      table.setEditingRow(null);
+    } catch (error) {
+      console.error('Erro ao atualizar entrega:', error);
+    }
   };
+  
 
   const openDeleteConfirmModal = (row) => {
     if (window.confirm("Tem certeza que deseja excluir essa entrega?")) {
       deleteEntrega(row.original.id);
     }
   };
-
-  const {
-    data: fetchedEntregas = [],
-    isError: isLoadingEntregasError,
-    isFetching: isFetchingEntregas,
-    isLoading: isLoadingEntregas,
-  } = useGetEntregas();
 
   const table = useMaterialReactTable({
     columns,
@@ -174,16 +178,9 @@ const TableEntregas = () => {
     enableEditing: true,
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingEntregasError
-      ? {
-        color: "error",
-        children: "Erro ao carregar dados",
-      }
+      ? { color: "error", children: "Erro ao carregar dados" }
       : undefined,
-    muiTableContainerProps: {
-      sx: {
-        minHeight: "500px",
-      },
-    },
+    muiTableContainerProps: { sx: { minHeight: "500px" } },
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateEntregaAction,
     onEditingRowCancel: () => setValidationErrors({}),
@@ -191,9 +188,7 @@ const TableEntregas = () => {
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
         <DialogTitle variant="h3">Adicionar Entrega</DialogTitle>
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-        >
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {internalEditComponents}
         </DialogContent>
         <DialogActions>
@@ -204,9 +199,7 @@ const TableEntregas = () => {
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
         <DialogTitle variant="h3">Editar Entrega</DialogTitle>
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-        >
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           {internalEditComponents}
         </DialogContent>
         <DialogActions>
@@ -229,10 +222,7 @@ const TableEntregas = () => {
       </Box>
     ),
     renderTopToolbarCustomActions: ({ table }) => (
-      <Button
-        variant="contained"
-        onClick={() => table.setCreatingRow(true)}
-      >
+      <Button variant="contained" onClick={() => table.setCreatingRow(true)}>
         Adicionar Entrega
       </Button>
     ),
@@ -245,94 +235,134 @@ const TableEntregas = () => {
   return <MaterialReactTable table={table} />;
 };
 
-// CREATE hook (post new entrega to API)
+// Requisições (POST, PUT, DELETE, GET)
 function useCreateEntrega() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (newEntrega) => {
       try {
-        const response = await axios.post('/entregas', newEntrega);
-        return response.data;
+        const response = await axios.post(
+          'http://localhost:8080/entregas',
+          newEntrega,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.status === 201) {
+          return response.data;
+        } else {
+          throw new Error('Erro ao criar entrega');
+        }
       } catch (error) {
-        console.error('Erro ao criar entrega:', error.response?.data || error.message);
+        console.error('Erro ao criar entrega:', error);
         throw error;
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['entregas']);
     },
-    onError: (error) => {
-      console.error('Erro ao criar entrega:', error.message);
-    },
   });
 }
 
-// UPDATE hook (update entrega in API)
+// UPDATE hook
 function useUpdateEntrega() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (updatedEntrega) => {
       try {
-        const response = await axios.patch(`/entregas/${updatedEntrega.id}`, updatedEntrega);
-        return response.data;
+        const response = await axios.patch(
+          `http://localhost:8080/entregas/${updatedEntrega.id}`,
+          updatedEntrega,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          return response.data;
+        } else {
+          throw new Error('Erro ao atualizar entrega');
+        }
       } catch (error) {
-        console.error('Erro ao atualizar entrega:', error.response?.data || error.message);
+        console.error('Erro ao atualizar entrega:', error);
         throw error;
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['entregas']);
     },
-    onError: (error) => {
-      console.error('Erro ao atualizar entrega:', error.message);
-    },
   });
 }
 
-// DELETE hook (delete entrega from API)
+// DELETE hook
 function useDeleteEntrega() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id) => {
       try {
-        await axios.delete(`/entregas/${id}`);
+        const response = await axios.delete(
+          `http://localhost:8080/entregas/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.status === 204) {
+          return true;
+        } else {
+          throw new Error('Erro ao deletar entrega');
+        }
       } catch (error) {
-        console.error('Erro ao excluir entrega:', error.response?.data || error.message);
+        console.error('Erro ao deletar entrega:', error);
         throw error;
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['entregas']);
     },
-    onError: (error) => {
-      console.error('Erro ao excluir entrega:', error.message);
-    },
   });
 }
 
-// GET hook (fetch entregas from API)
 function useGetEntregas() {
   return useQuery({
     queryKey: ['entregas'],
     queryFn: async () => {
       try {
-        const response = await axios.get('/entregas');
-        return response.data;
+        const response = await axios.get(
+          'http://localhost:8080/entregas/pendentes',
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          return response.data;
+        } else {
+          throw new Error('Erro ao buscar entregas');
+        }
       } catch (error) {
-        console.error('Erro ao buscar entregas:', error.response?.data || error.message);
+        console.error('Erro ao buscar entregas:', error);
         throw error;
       }
     },
     onError: (error) => {
-      console.error('Erro ao buscar entregas:', error.message);
+      console.error('Erro ao carregar entregas:', error);
     },
   });
 }
 
-// Main component with QueryClientProvider
 const App = () => {
   const queryClient = new QueryClient();
 
