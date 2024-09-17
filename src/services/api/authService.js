@@ -32,6 +32,8 @@ class AuthService {
     localStorage.removeItem('user');
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('userId');
+    sessionStorage.removeItem('fkUser');
+
     window.location.href = '/login';
   }
 

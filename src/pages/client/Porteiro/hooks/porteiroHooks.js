@@ -7,10 +7,12 @@ function useCreatePorteiro() {
   return useMutation({
     mutationFn: async (newPorteiro) => {
       try {
+        const fkUser = sessionStorage.getItem('fkUser');
+        const condominioIdProvisorio = fkUser ? Number(fkUser) - 1 : null; // Converte para número e ajusta
         const response = await axios.post(
           'http://localhost:8080/porteiros',
           {
-            condominioId: 1,
+            condominioId: condominioIdProvisorio,
             nome: newPorteiro.nome,
             rg: newPorteiro.rg,
             senha: newPorteiro.senha
@@ -117,8 +119,10 @@ function useGetPorteiros() {
     queryKey: ['porteiros'],
     queryFn: async () => {
       try {
+        const fkUser = sessionStorage.getItem('fkUser');
+        const condominioIdProvisorio = fkUser ? Number(fkUser) - 1 : null; // Converte para número e ajusta
         const response = await axios.get(
-          'http://localhost:8080/porteiros/condominio/1',
+          `http://localhost:8080/porteiros/condominio/${condominioIdProvisorio}`,
           {
             headers: {
               Authorization: `Bearer ${sessionStorage.getItem('token')}`,

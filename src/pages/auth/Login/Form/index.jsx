@@ -61,6 +61,7 @@ const FormularioLogin = () => {
         senha,
       });
       sessionStorage.setItem("token", response.data.token)
+      sessionStorage.setItem("fkUser", response.data.userId)
 
       console.log("Status HTTP da resposta:", response.status);
       console.log("Response", response);
