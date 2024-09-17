@@ -48,6 +48,16 @@ const TableEntregas = () => {
             ...prevErrors,
             tipoEntrega: undefined,
           })),
+          InputLabelProps: {
+            shrink: true, 
+          },
+          InputProps: {
+            sx: {
+              '& input': {
+                paddingTop: '8px', 
+              },
+            },
+          },
         },
       },
       {
@@ -62,6 +72,16 @@ const TableEntregas = () => {
             ...prevErrors,
             dataRecebimentoPorteiro: undefined,
           })),
+          InputLabelProps: {
+            shrink: true, 
+          },
+          InputProps: {
+            sx: {
+              '& input': {
+                paddingTop: '8px', 
+              },
+            },
+          },
         },
       },
       {
@@ -76,6 +96,16 @@ const TableEntregas = () => {
           disabled: true,
           error: !!validationErrors?.dataRecebimentoMorador,
           helperText: validationErrors?.dataRecebimentoMorador,
+          InputLabelProps: {
+            shrink: true, 
+          },
+          InputProps: {
+            sx: {
+              '& input': {
+                paddingTop: '8px', 
+              },
+            },
+          },
         },
       },
       {
@@ -95,23 +125,33 @@ const TableEntregas = () => {
       {
         accessorKey: 'apartamento.id',
         header: 'Apartamento ID',
-        muiTableBodyCellEditTextFieldProps: {
+        muiEditTextFieldProps: {
           type: 'number',
           required: true,
           disabled: false,
+          error: !!validationErrors?.apartamentoId,
+          helperText: validationErrors?.apartamentoId,
+          InputLabelProps: {
+            shrink: true, 
+          },
         },
       },
       {
         accessorKey: 'porteiro.nome',
         header: 'Nome do Porteiro',
-        muiTableBodyCellEditTextFieldProps: {
+        muiEditTextFieldProps: {
           required: true,
           disabled: false,
+          error: !!validationErrors?.porteiroNome,
+          helperText: validationErrors?.porteiroNome,
+          InputLabelProps: {
+            shrink: true, 
+          },
         },
         muiTableBodyCellProps: {
           sx: { textAlign: 'center' },
         },
-      }
+      },      
     ],
     [validationErrors]
   );
