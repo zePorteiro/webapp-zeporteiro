@@ -25,15 +25,11 @@ const handleError = (error) => {
 
 const validateForm = (values) => {
   const errors = {};
-  // Validação do nome
   if (!values.nome) errors.nome = 'Nome é obrigatório';
-  // Validação do RG
   if (!values.rg) errors.rg = 'RG é obrigatório';
   else if (!/^\d{1,9}$/.test(values.rg)) errors.rg = 'RG deve conter apenas números e ter no máximo 9 dígitos';
-  // Validação da senha
   if (!values.senha) errors.senha = 'Senha é obrigatória';
   else if (values.senha.length < 6 || values.senha.length > 20) errors.senha = 'Senha deve ter entre 6 e 20 caracteres';
-  // Validação do ID do condomínio
   if (!values.condominioId) errors.condominioId = 'Condomínio é obrigatório';
   return errors;
 };
@@ -61,7 +57,7 @@ const TablePorteiros = () => {
       return;
     }
     try {
-      await createPorteiro({ ...values, condominioId: selectedCondominioId });
+      await createPorteiro({ ...values, condominioId: Number(selectedCondominioId) });
       table.setCreatingRow(null);
     } catch (error) {
       handleError(error);
@@ -75,7 +71,7 @@ const TablePorteiros = () => {
       return;
     }
     try {
-      await updatePorteiro({ ...values, condominioId: selectedCondominioId });
+      await updatePorteiro({ ...values, condominioId: Number(selectedCondominioId) });
       table.setEditingRow(null);
     } catch (error) {
       handleError(error);
@@ -129,14 +125,22 @@ const TablePorteiros = () => {
         accessorKey: 'condominioId',
         header: 'Condomínio',
         muiEditTextFieldProps: {
-          type: 'number',
+          type: 'number',  // Ensure the input is numeric
           required: true,
           error: !!validationErrors.condominioId,
           helperText: validationErrors.condominioId,
           onFocus: () => setValidationErrors((prev) => ({ ...prev, condominioId: undefined })),
         },
+        renderCell: ({ cell }) => (
+          <TextField
+            value={selectedCondominioId || ''}  // Use the state for value
+            onChange={(e) => setSelectedCondominioId(e.target.value)}
+            fullWidth
+            type="number"  // Ensure the input is numeric
+          />
+        ),
       },
-    ], [validationErrors]),
+    ], [validationErrors, selectedCondominioId]),
     data: fetchedPorteiros,
     createDisplayMode: 'modal',
     editDisplayMode: 'modal',
@@ -215,8 +219,6 @@ const TablePorteiros = () => {
     ),
     isLoading: isLoadingPorteiros,
     isSaving: isCreatingPorteiro || isUpdatingPorteiro || isDeletingPorteiro,
-    showAlertBanner: isLoadingPorteirosError,
-    showProgressBars: isFetchingPorteiros,
   });
 
   return <MaterialReactTable table={table} />;

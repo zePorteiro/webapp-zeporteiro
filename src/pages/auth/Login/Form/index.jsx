@@ -63,11 +63,12 @@ const FormularioLogin = () => {
       sessionStorage.setItem("token", response.data.token)
 
       console.log("Status HTTP da resposta:", response.status);
+      console.log("Response", response);
 
       if (response.status === 200 || response.status === 201) {
         toast.success("Login realizado com sucesso!");
         setTimeout(() => {
-          window.location.href = "/estoque";
+          //window.location.href = "/apartamentos";
         }, 3000);
       }
     } catch (error) {
