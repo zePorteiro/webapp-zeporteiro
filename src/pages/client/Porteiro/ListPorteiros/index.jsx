@@ -103,7 +103,7 @@ const TablePorteiros = () => {
               telefoneCelular: undefined,
             }),
         },
-      },      
+      },
     ],
     [validationErrors],
   );
@@ -254,9 +254,16 @@ function useCreateUser() {
   return useMutation({
     mutationFn: async (user) => {
       try {
-        const response = await axios.post('http://localhost:8080/porteiros', user, {
+        const token = sessionStorage.getItem('token');
+        const response = await axios.post('http://localhost:8080/porteiros', {
+          nome: user.nome,
+          rg: '7983710289',
+          senha: 'teste123',
+          condominioId: 1,
+        }, {
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`, // Corrigido aqui
           },
         });
         return response.data;
@@ -291,9 +298,11 @@ function useGetPorteiros() {
     queryKey: ['users'],
     queryFn: async () => {
       try {
-        const response = await axios.get('http://localhost:8080/porteiros', {
+        const token = sessionStorage.getItem('token');
+        const response = await axios.get('http://localhost:8080/porteiros/condominio/1', {
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
         });
         return response.data; // Retorna os dados dos usuários obtidos da API
@@ -313,9 +322,11 @@ function useUpdatePorteiro() {
   return useMutation({
     mutationFn: async (user) => {
       try {
+        const token = sessionStorage.getItem('token');
         const response = await axios.put(`http://localhost:8080/porteiros/${user.id}`, user, {
           headers: {
             'Content-Type': 'application/json',
+            'Bearer': `${token}`,
           },
         });
         return response.data;
@@ -356,9 +367,11 @@ function useDeletePorteiro() {
   return useMutation({
     mutationFn: async (userId) => {
       try {
+        const token = sessionStorage.getItem('token');
         await axios.delete(`http://localhost:8080/porteiros/${userId}`, {
           headers: {
             'Content-Type': 'application/json',
+            'Bearer': `${token}`,
           },
         });
       } catch (error) {
@@ -414,35 +427,35 @@ const validatePhoneNumber = (phoneNumber) =>
     /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/,
   );
 
-  function validateUser(user) {
-    const errors = {};
-  
-    // Validação do nome
-    if (!validateRequired(user.nome)) {
-      errors.nome = 'Preencha o campo obrigatório';
-    }
-  
-    // Validação do turno
-    if (!validateRequired(user.turno)) {
-      errors.turno = 'Preencha o campo obrigatório';
-    }
-  
-    // Validação do email
-    if (!validateRequired(user.email)) {
-      errors.email = 'Preencha o campo obrigatório';
-    } else if (!validateEmail(user.email)) {
-      errors.email = 'Email não está no formato correto';
-      console.log('Erro de validação: Formato de email inválido');
-    }
-  
-    // Validação do telefone celular
-    if (!validateRequired(user.telefoneCelular)) {
-      errors.telefoneCelular = 'Preencha o campo obrigatório';
-    } else if (!validatePhoneNumber(user.telefoneCelular)) {
-      errors.telefoneCelular = 'Telefone celular não está no formato correto';
-      console.log('Erro de validação: Formato de telefone celular inválido');
-    }
-  
-    return errors;
+function validateUser(user) {
+  const errors = {};
+
+  // Validação do nome
+  if (!validateRequired(user.nome)) {
+    errors.nome = 'Preencha o campo obrigatório';
   }
-  
+
+  // Validação do turno
+  if (!validateRequired(user.turno)) {
+    errors.turno = 'Preencha o campo obrigatório';
+  }
+
+  // Validação do email
+  if (!validateRequired(user.email)) {
+    errors.email = 'Preencha o campo obrigatório';
+  } else if (!validateEmail(user.email)) {
+    errors.email = 'Email não está no formato correto';
+    console.log('Erro de validação: Formato de email inválido');
+  }
+
+  // Validação do telefone celular
+  if (!validateRequired(user.telefoneCelular)) {
+    errors.telefoneCelular = 'Preencha o campo obrigatório';
+  } else if (!validatePhoneNumber(user.telefoneCelular)) {
+    errors.telefoneCelular = 'Telefone celular não está no formato correto';
+    console.log('Erro de validação: Formato de telefone celular inválido');
+  }
+
+  return errors;
+}
+
