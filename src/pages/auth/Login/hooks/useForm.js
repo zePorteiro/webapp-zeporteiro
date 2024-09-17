@@ -31,7 +31,7 @@ const useForm = () => {
             console.log(response.data)
 
             if (response.status === 200) {
-                window.location.href = "/cadastrar-encomenda";
+                window.location.href = "/estoque";
             }
         } catch (error) {
             console.error("Erro ao fazer login:", error);
