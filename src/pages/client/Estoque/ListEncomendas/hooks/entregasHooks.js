@@ -12,6 +12,14 @@ export function useCreateEntrega() {
           'http://localhost:8080/entregas',
           newEntrega,
           {
+            // tipoEntrega: newEntrega.tipoEntrega,
+            // dataRecebimentoMorador: newEntrega.dataRecebimentoMorador,
+            // dataRecebimentoPorteiro: newEntrega.dataRecebimentoPorteiro,
+            // porteiroNome: newEntrega.porteiro.nome,
+            // recebido: newEntrega.recebido,
+             fkApartamento: newEntrega.apartamento.id,
+
+          },{
             headers: {
               Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
