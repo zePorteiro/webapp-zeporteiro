@@ -243,15 +243,58 @@ const TableEntregas = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
-      <Button variant="contained" onClick={() => table.setCreatingRow(true)}>
-        Adicionar Entrega
-      </Button>
-    ),
+    renderTopToolbarCustomActions: ({ table }) => {
+      const handleGenerateCSV = () => {
+        const headers = columns.map(col => col.header).join(','); 
+        const rows = fetchedEntregas.map((entrega) => [
+          entrega.tipoEntrega,
+          entrega.dataRecebimentoPorteiro,
+          entrega.dataRecebimentoMorador || '',
+          entrega.recebido ? 'Sim' : 'Não',
+          entrega.apartamento.id,
+          entrega.porteiro.nome,
+        ]);
+    
+        const csvContent = [
+          headers,
+          ...rows.map(row => row.join(',')), 
+        ].join('\n'); 
+    
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'entregas.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+    
+      return (
+        <div>
+          <Button 
+            variant="contained" 
+            color="success" 
+            onClick={() => table.setCreatingRow(true)}
+            style={{ marginRight: '8px' }} 
+          >
+            Adicionar Entrega
+          </Button>
+      
+          <Button 
+            variant="contained" 
+            color="success" 
+            onClick={handleGenerateCSV}
+          >
+            Gerar CSV
+          </Button>
+        </div>
+      );
+    },
     isLoading: isLoadingEntregas,
     isSaving: isCreatingEntrega || isUpdatingEntrega || isDeletingEntrega,
     showAlertBanner: isLoadingEntregasError,
-    showProgressBars: isFetchingEntregas,
+    showProgressBars: isFetchingEntregas,   
   });
 
   return <MaterialReactTable table={table} />;
