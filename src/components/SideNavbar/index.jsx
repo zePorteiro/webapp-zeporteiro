@@ -17,25 +17,44 @@ export default function MenuUsuario() {
         {menuOpen ? <FaTimes size={30} color="white" /> : <FaBars size={30} color="white" />}
       </HamburgerMenu>
       <Sidebar menuOpen={menuOpen}>
-        <Imagem src={Logo} alt="Logo do Zé Porteiro" />
+        <Imagem 
+          src={Logo} 
+          alt="Logo do Zé Porteiro" 
+          style={{ width: '170px', height: 'auto', marginBottom: '30px' }} 
+        />
         <Links menuOpen={menuOpen}>
-          <Link onClick={() => window.location.href = '/pagina-inicial'}>
+          <Link 
+            onClick={() => window.location.href = '/pagina-inicial'}
+            style={{ fontSize: '23px', marginBottom: '12px' }}
+          >
             Página Inicial
           </Link>
-          <Link onClick={() => window.location.href = '/estoque'}>
+          <Link 
+            onClick={() => window.location.href = '/estoque'}
+            style={{ fontSize: '23px', marginBottom: '12px' }}
+          >
             Estoque
           </Link>
-          <Link onClick={() => window.location.href = '/apartamentos'}>
+          <Link 
+            onClick={() => window.location.href = '/apartamentos'}
+            style={{ fontSize: '23px', marginBottom: '12px' }}
+          >
             Apartamentos
           </Link>
-          <Link onClick={() => window.location.href = '/porteiros'}>
+          <Link 
+            onClick={() => window.location.href = '/porteiros'}
+            style={{ fontSize: '23px', marginBottom: '12px' }}
+          >
             Porteiros
           </Link>
-          <Link onClick={() => AuthService.logout()}>
+          <Link 
+            onClick={() => AuthService.logout()}
+            style={{ fontSize: '23px', marginBottom: '12px' }}
+          >
             SAIR
           </Link>
         </Links>
       </Sidebar>
     </PageContainer>
-  );
+  );   
 }
