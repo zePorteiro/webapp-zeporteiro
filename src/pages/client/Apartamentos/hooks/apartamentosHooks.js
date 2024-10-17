@@ -129,14 +129,43 @@ export function useDeleteApartamento() {
         mutationFn: async (id) => {
             try {
                 console.log('Deletando apartamento com ID:', id);
-                await axios.delete(`http://localhost:8080/apartamentos/${id}`);
+
+                const response = await axios.delete(`http://localhost:8080/apartamentos/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+                    },
+                });
+
+                if (response.status === 204) {
+                    console.log('Apartamento excluído com sucesso');
+                } else {
+                    throw new Error(`Erro ao excluir apartamento: ${response.statusText}`);
+                }
             } catch (error) {
                 console.error('Erro ao deletar apartamento:', error);
                 throw error;
             }
         },
+        onMutate: async (id) => {
+            await queryClient.cancelQueries(['apartamentos']);
+            const previousApartamentos = queryClient.getQueryData(['apartamentos']);
+
+            queryClient.setQueryData(
+                ['apartamentos'],
+                previousApartamentos?.filter((apartamento) => apartamento.id !== id)
+            );
+
+            return { previousApartamentos }; 
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries(["apartamentos"]);
+            queryClient.invalidateQueries(['apartamentos']); 
+        },
+        onError: (error, variables, context) => {
+
+            if (context?.previousApartamentos) {
+                queryClient.setQueryData(['apartamentos'], context.previousApartamentos);
+            }
         },
     });
 }
+
