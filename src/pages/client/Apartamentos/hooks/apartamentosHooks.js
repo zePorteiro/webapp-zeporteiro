@@ -10,10 +10,16 @@ export function useCreateApartamento() {
             try {
                 console.log('Enviando apartamento:', JSON.stringify(apartamento, null, 2));
 
+                const condominioId = sessionStorage.getItem("condominioId");
+                if (!condominioId) {
+                    throw new Error('ID do condomínio não encontrado no sessionStorage');
+                }
+
                 const fkUser = sessionStorage.getItem("fkUser");
                 const userId = fkUser ? Number(fkUser) - 1 : null;
+                
                 const response = await axios.post(
-                    `http://localhost:8080/apartamentos/${userId}`,
+                    `http://localhost:8080/apartamentos/${condominioId}`,
                     apartamento,
                     {
                         headers: {
@@ -21,11 +27,6 @@ export function useCreateApartamento() {
                             'Content-Type': 'application/json',
                         },
                     }
-                //const condominioId = sessionStorage.getItem("condominioId");
-                //if (!condominioId) {
-                //    throw new Error('ID do condomínio não encontrado no sessionStorage');
-                //}
-
                 );
 
                 console.log('Resposta:', response.data);
@@ -46,7 +47,7 @@ export function useCreateApartamento() {
             if (typeof newApartamento === 'object' && !Array.isArray(newApartamento)) {
                 queryClient.setQueryData(['apartamentos'], [...previousApartamentos, newApartamento]);
             } else {
-                console.error('newApartamento não é um objeto:', newApartamento);
+                console.error('newApartamento não é um objeto válido:', newApartamento);
             }
 
             return { previousApartamentos };
@@ -67,12 +68,7 @@ export function useGetApartamentos() {
         queryKey: ["apartamentos"],
         queryFn: async () => {
             try {
-                // Obtém o ID do usuário da sessão
-                const fkUser = sessionStorage.getItem("fkUser");
-                const userId = fkUser ? Number(fkUser) - 1 : null;
-
-                // Faz a requisição para obter os apartamentos
-                const response = await axios.get(`http://localhost:8080/apartamentos/${userId}`, {
+                const response = await axios.get(`http://localhost:8080/apartamentos`, {
                     headers: {
                         Authorization: `Bearer ${sessionStorage.getItem("token")}`,
                     },
@@ -81,7 +77,7 @@ export function useGetApartamentos() {
                 return response.data;
             } catch (error) {
                 console.error('Erro ao obter apartamentos:', error);
-                throw error; // Repassa o erro para que o react-query possa lidar com ele
+                throw error; 
             }
         },
         refetchOnWindowFocus: false,
