@@ -8,39 +8,69 @@ export function useCreateEntrega() {
   return useMutation({
     mutationFn: async (newEntrega) => {
       try {
+        const token = sessionStorage.getItem('token');
+        const fkUser = sessionStorage.getItem('fkUser');
+
+        if (!token) {
+          throw new Error('Token de autenticação não encontrado');
+        }
+        if (!fkUser) {
+          throw new Error('fkUser não encontrado no sessionStorage');
+        }
+
+        console.log('Dados da nova entrega:', newEntrega);
+
+        const condominioIdProvisorio = Number(fkUser) - 1;
+
+        const payload = {
+          condominioId: condominioIdProvisorio,
+          tipoEntrega: newEntrega.tipoEntrega,
+          dataRecebimentoPorteiro: newEntrega.dataRecebimentoPorteiro,
+          fkApartamento: newEntrega.apartamento?.id,
+          porteiroNome: newEntrega.porteiro?.nome,
+        };
+
+        console.log('Payload a ser enviado:', payload);
+
         const response = await axios.post(
           'http://localhost:8080/entregas',
-          newEntrega,
+          payload,
           {
-            // tipoEntrega: newEntrega.tipoEntrega,
-            // dataRecebimentoMorador: newEntrega.dataRecebimentoMorador,
-            // dataRecebimentoPorteiro: newEntrega.dataRecebimentoPorteiro,
-            // porteiroNome: newEntrega.porteiro.nome,
-            // recebido: newEntrega.recebido,
-             fkApartamento: newEntrega.apartamento.id,
-
-          },{
             headers: {
-              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
             },
           }
         );
 
         if (response.status === 201) {
+          console.log('Entrega criada com sucesso:', response.data);
           return response.data;
         } else {
-          throw new Error('Erro ao criar entrega');
+          throw new Error(`Erro ao criar entrega: ${response.statusText}`);
         }
       } catch (error) {
-        console.error('Erro ao criar entrega:', error);
-        throw error;
+        if (error.response) {
+          console.error('Erro do servidor:', error.response.data);
+          throw new Error(`Erro ${error.response.status}: ${error.response.data.message || 'Erro desconhecido'}`);
+        } else if (error.request) {
+          console.error('Nenhuma resposta do servidor:', error.request);
+          throw new Error('Nenhuma resposta do servidor');
+        } else {
+          console.error('Erro ao configurar a requisição:', error.message);
+          throw new Error(error.message);
+        }
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['entregas']);
     },
+    onError: (error) => {
+      console.error('Erro ao criar entrega:', error);
+    },
   });
 }
+
 
 // UPDATE
 export function useUpdateEntrega() {
@@ -113,11 +143,12 @@ export function useGetEntregas() {
     queryKey: ['entregas'],
     queryFn: async () => {
       try {
+        const fkUser = sessionStorage.getItem('fkUser');
         const response = await axios.get(
-          'http://localhost:8080/entregas/pendentes',
+          `http://localhost:8080/entregas/`,
           {
             headers: {
-              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
             },
           }
         );
@@ -137,3 +168,4 @@ export function useGetEntregas() {
     },
   });
 }
+
