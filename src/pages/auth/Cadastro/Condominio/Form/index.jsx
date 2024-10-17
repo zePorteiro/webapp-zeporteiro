@@ -88,7 +88,7 @@ export default function PaginaCondominio() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
+  
     // Validação dos campos
     if (
       !validarCEP(cep) ||
@@ -103,7 +103,6 @@ export default function PaginaCondominio() {
     }
   
     try {
-
       const dadosCondominio = {
         nome,
         cep,
@@ -111,7 +110,7 @@ export default function PaginaCondominio() {
         numero,
         bairro,
         cidade,
-        fkCliente: sessionStorage.getItem("fkUser"), 
+        fkCliente: sessionStorage.getItem("fkUser"), // Obtém o ID do cliente do sessionStorage
       };
   
       // Fazendo a requisição para a API
@@ -120,24 +119,25 @@ export default function PaginaCondominio() {
         dadosCondominio,
         {
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("token")}`, 
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Passa o token de autenticação
           },
         }
       );
   
       console.log("Resposta do servidor:", response);
   
-
+      // Verifica se o condomínio foi cadastrado com sucesso
       if (response.status === 201) {
+        const condominioId = response.data.id; // Supondo que o ID do condomínio venha na resposta
+        sessionStorage.setItem("condominioId", condominioId); // Armazena o ID no sessionStorage
+  
+        // Redireciona o usuário para a página de login (ou outra página)
         navigate("/login");
       } else {
-
         setError("Erro inesperado ao cadastrar condomínio.");
       }
     } catch (error) {
-
       if (error.response) {
-
         console.error("Erro ao cadastrar condomínio:", error.response.data);
         if (error.response.status === 401) {
           setError("Acesso não autorizado. Verifique suas credenciais.");
@@ -145,16 +145,14 @@ export default function PaginaCondominio() {
           setError(`Erro ao cadastrar condomínio: ${error.response.data.message || error.response.data}`);
         }
       } else if (error.request) {
-
         console.error("Erro na requisição:", error.request);
         setError("Não foi possível se conectar ao servidor. Tente novamente mais tarde.");
       } else {
-
         console.error("Erro ao configurar a requisição:", error.message);
         setError("Erro ao configurar a requisição. Por favor, tente novamente.");
       }
     }
-  };
+  };  
   
 
   const isFormValid =
