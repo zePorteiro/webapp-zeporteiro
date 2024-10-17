@@ -22,8 +22,8 @@ import { useCreateApartamento, useGetApartamentos, useUpdateApartamento, useDele
 
 const TableApartamentos = () => {
   const [validationErrors, setValidationErrors] = useState({});
-  const [openCreateModal, setOpenCreateModal] = useState(false); 
-  const [newApartamento, setNewApartamento] = useState({ 
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [newApartamento, setNewApartamento] = useState({
     numAp: '',
     bloco: '',
     vazio: false,
@@ -143,11 +143,17 @@ const TableApartamentos = () => {
 
   return (
     <>
-      <Button variant="contained" onClick={() => setOpenCreateModal(true)} sx={{ mb: 2 }}>
+      <Button
+        variant="contained"
+        color="success" 
+        onClick={() => setOpenCreateModal(true)}
+        sx={{ mb: 2 }}
+      >
         Adicionar Apartamento
       </Button>
-      
+
       <MaterialReactTable table={table} />
+
 
       {/* Modal de criação de novo apartamento */}
       <Dialog open={openCreateModal} onClose={() => setOpenCreateModal(false)}>

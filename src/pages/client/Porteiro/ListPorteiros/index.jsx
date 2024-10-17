@@ -210,6 +210,7 @@ const TablePorteiros = () => {
     renderTopToolbarCustomActions: ({ table }) => (
       <Button
         variant="contained"
+        color="success" 
         onClick={() => {
           table.setCreatingRow(true);
         }}
@@ -218,7 +219,7 @@ const TablePorteiros = () => {
       </Button>
     ),
     isLoading: isLoadingPorteiros,
-    isSaving: isCreatingPorteiro || isUpdatingPorteiro || isDeletingPorteiro,
+    isSaving: isCreatingPorteiro || isUpdatingPorteiro || isDeletingPorteiro,    
   });
 
   return <MaterialReactTable table={table} />;
