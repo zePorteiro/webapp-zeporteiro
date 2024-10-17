@@ -15,9 +15,6 @@ export function useCreateApartamento() {
                     throw new Error('ID do condomínio não encontrado no sessionStorage');
                 }
 
-                const fkUser = sessionStorage.getItem("fkUser");
-                const userId = fkUser ? Number(fkUser) - 1 : null;
-                
                 const response = await axios.post(
                     `http://localhost:8080/apartamentos/${condominioId}`,
                     apartamento,
@@ -30,6 +27,24 @@ export function useCreateApartamento() {
                 );
 
                 console.log('Resposta:', response.data);
+
+                const apartamentoId = response.data.id;
+                if (apartamentoId) {
+
+                    let storedIds = sessionStorage.getItem("apartamentoIds");
+
+                    if (storedIds) {
+            
+                        storedIds = JSON.parse(storedIds);
+                    } else {
+                        storedIds = [];
+                    }
+
+                    storedIds.push(apartamentoId);
+                    sessionStorage.setItem("apartamentoIds", JSON.stringify(storedIds));
+                    console.log("Apartamentos cadastrados:", storedIds);
+                }
+
                 return response.data;
             } catch (error) {
                 console.error('Erro ao criar apartamento:', {
@@ -62,6 +77,7 @@ export function useCreateApartamento() {
         },
     });
 }
+
 
 export function useGetApartamentos() {
     return useQuery({
