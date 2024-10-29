@@ -60,5 +60,13 @@
   },
   "devDependencies": {
     "depcheck": "^1.4.7"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-react"
+    ],
+    "compact": false,
+    "ignore": ["**/*.svg"]
   }
 }
