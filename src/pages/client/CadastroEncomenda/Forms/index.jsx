@@ -64,7 +64,7 @@ export default function CadastrarEncomendas() {
     // FAZER REQUISIÇÃO PARA A API
     try {
       console.log('Enviando dados para a API:', formData);
-      const response = await axios.post(`http://localhost:8080/entregas`, formData, {
+      const response = await axios.post(`http://10.0.0.178:8080/entregas`, formData, {
         headers: {
           Authorization: `Bearer ${sessionStorage.getItem("token")}`
         }

@@ -14,7 +14,7 @@ function InfosSindico() {
   // Função para carregar os dados do síndico
   const fetchSindicoData = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/clientes');
+      const response = await axios.get('http://10.0.0.178:8080/clientes');
       const { nomeCompleto, documentoIdentidade, telefoneCelular } = response.data;
 
       setNomeCompleto(nomeCompleto);

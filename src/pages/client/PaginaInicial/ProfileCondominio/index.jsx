@@ -16,7 +16,7 @@ function InfosCondominio() {
   // Função para carregar os dados do condomínio
   const fetchCondominioData = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/condominios');
+      const response = await axios.get('http://10.0.0.178:8080/condominios');
       const { nomeCondominio, endereco, cep, bairro, cidade } = response.data;
 
       setNomeCondominio(nomeCondominio);
@@ -46,7 +46,7 @@ function InfosCondominio() {
     };
     
     try {
-      const response = await axios.put('http://localhost:8080/condominios', updatedData);
+      const response = await axios.put('http://10.0.0.178:8080/condominios', updatedData);
       console.log('HTTP Status:', response.status);
       setIsEditing(false);
     } catch (error) {

@@ -254,7 +254,7 @@ function useCreateUser() {
   return useMutation({
     mutationFn: async (user) => {
       try {
-        const response = await axios.post('http://localhost:8080/porteiros', user, {
+        const response = await axios.post('http://10.0.0.178:8080/porteiros', user, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -291,7 +291,7 @@ function useGetPorteiros() {
     queryKey: ['users'],
     queryFn: async () => {
       try {
-        const response = await axios.get('http://localhost:8080/porteiros', {
+        const response = await axios.get('http://10.0.0.178:8080/porteiros', {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -313,7 +313,7 @@ function useUpdatePorteiro() {
   return useMutation({
     mutationFn: async (user) => {
       try {
-        const response = await axios.put(`http://localhost:8080/porteiros/${user.id}`, user, {
+        const response = await axios.put(`http://10.0.0.178:8080/porteiros/${user.id}`, user, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -356,7 +356,7 @@ function useDeletePorteiro() {
   return useMutation({
     mutationFn: async (userId) => {
       try {
-        await axios.delete(`http://localhost:8080/porteiros/${userId}`, {
+        await axios.delete(`http://10.0.0.178:8080/porteiros/${userId}`, {
           headers: {
             'Content-Type': 'application/json',
           },
