@@ -285,7 +285,7 @@ function useCreateUser() {
   return useMutation({
     mutationFn: async (apartamentos) => {
       try {
-        const response = await axios.post('http://10.0.0.178:8080/apartamentos', apartamentos, {
+        const response = await axios.post('http://10.0.0.145:8080/apartamentos', apartamentos, {
           headers: {
             Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             'Content-Type': 'application/json'
@@ -327,7 +327,7 @@ function useGetUsers() {
     queryKey: ["users"],
     queryFn: async () => {
       try {
-        const response = await axios.get("http://10.0.0.178:8080/apartamentos", {
+        const response = await axios.get("http://10.0.0.145:8080/apartamentos", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
@@ -355,7 +355,7 @@ function useUpdateUser() {
       try {
         // Realiza a requisição PUT à API para atualizar o usuário
         const response = await axios.put(
-          `http://10.0.0.178:8080/apartamentos/${user.id}`,
+          `http://10.0.0.145:8080/apartamentos/${user.id}`,
           user,
           {
             headers: {
@@ -401,7 +401,7 @@ function useDeleteUser() {
     mutationFn: async (userId) => {
       try {
         // Realiza a requisição DELETE à API para excluir o usuário
-        await axios.delete(`http://10.0.0.178:8080/apartamentos/${userId}`, {
+        await axios.delete(`http://10.0.0.145:8080/apartamentos/${userId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Inclua o token se a API precisar de autenticação
           },

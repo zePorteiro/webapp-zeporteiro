@@ -261,7 +261,7 @@ function useCreateEntrega() {
   return useMutation({
     mutationFn: async (encomenda) => {
       try {
-        const response = await axios.post('http://10.0.0.178:8080/entregas', encomenda, {
+        const response = await axios.post('http://10.0.0.145:8080/entregas', encomenda, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -304,7 +304,7 @@ function useGetEntregas() {
     queryKey: ['entregas'],
     queryFn: async () => {
       try {
-        const response = await axios.get('http://10.0.0.178:8080/entregas', {
+        const response = await axios.get('http://10.0.0.145:8080/entregas', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
@@ -331,7 +331,7 @@ function useUpdateEntrega() {
     mutationFn: async (entrega) => {
       try {
         const response = await axios.put(
-          `http://10.0.0.178:8080/entregas/${entrega.id}`,
+          `http://10.0.0.145:8080/entregas/${entrega.id}`,
           entrega,
           {
             headers: {
@@ -376,7 +376,7 @@ function useDeleteEntrega() {
   return useMutation({
     mutationFn: async (entregaId) => {
       try {
-        await axios.delete(`http://10.0.0.178:8080/entregas/${entregaId}`, {
+        await axios.delete(`http://10.0.0.145:8080/entregas/${entregaId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`, 
           },

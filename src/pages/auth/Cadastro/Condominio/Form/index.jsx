@@ -98,7 +98,7 @@ export default function PaginaCondominio() {
     }
 
     try {
-      const response = await axios.post("http://10.0.0.178:8080/condominios", {
+      const response = await axios.post("http://10.0.0.145:8080/condominios", {
         nome,
         cep,
         logradouro,
