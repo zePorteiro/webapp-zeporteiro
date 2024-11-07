@@ -12,6 +12,8 @@ export function useCreateApartamento() {
 
                 const condominioId = sessionStorage.getItem("condominioId");
                 if (!condominioId) {
+                    console.error('ID do condomínio não encontrado no sessionStorage. Verifique se o usuário selecionou um condomínio.');
+                    alert("Erro: ID do condomínio não encontrado. Por favor, selecione um condomínio antes de cadastrar um apartamento.");
                     throw new Error('ID do condomínio não encontrado no sessionStorage');
                 }
 
@@ -30,11 +32,9 @@ export function useCreateApartamento() {
 
                 const apartamentoId = response.data.id;
                 if (apartamentoId) {
-
                     let storedIds = sessionStorage.getItem("apartamentoIds");
 
                     if (storedIds) {
-            
                         storedIds = JSON.parse(storedIds);
                     } else {
                         storedIds = [];
@@ -77,6 +77,7 @@ export function useCreateApartamento() {
         },
     });
 }
+
 
 
 export function useGetApartamentos() {
@@ -168,4 +169,3 @@ export function useDeleteApartamento() {
         },
     });
 }
-

@@ -4,7 +4,7 @@ import { Formulario, ErrorPopup, Botao } from "./styles";
 import { CampoInputCadastro, InputCadastro, Label } from "../../Inputs/styles";
 import { useNavigate } from "react-router-dom";
 import { validarCEP, validarNumero, validarPreenchido } from "../../../../../utils/formValidation";
-import { ToastContainer, toast } from "react-toastify"; 
+import { ToastContainer } from "react-toastify"; 
 import 'react-toastify/dist/ReactToastify.css'; 
 
 export default function PaginaCondominio() {
@@ -27,42 +27,47 @@ export default function PaginaCondominio() {
     const formattedCep = event.target.value.replace(/\D/g, "");
 
     if (validarCEP(formattedCep)) {
-      fetch(`https://viacep.com.br/ws/${formattedCep}/json/`)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("Data:", data);
-          if (!data.erro) {
-            setLogradouro(data.logradouro);
-            setBairro(data.bairro);
-            setCidade(data.localidade);
-            setIsFormVisible(true);
-            setError("");
-          } else {
-            setError("CEP não encontrado");
-            setLogradouro("");
-            setBairro("");
-            setCidade("");
-            setIsFormVisible(false);
-          }
-        })
-        .catch((error) => {
-          console.error("Erro ao buscar CEP:", error);
-          setError("Erro ao buscar CEP");
+    fetch(`https://viacep.com.br/ws/${formattedCep}/json/`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Erro na resposta: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Data:", data);
+        if (!data.erro) {
+          setLogradouro(data.logradouro);
+          setBairro(data.bairro);
+          setCidade(data.localidade);
+          setIsFormVisible(true);
+          setError("");
+        } else {
+          setError("CEP não encontrado");
           setLogradouro("");
           setBairro("");
           setCidade("");
           setIsFormVisible(false);
-        });
-    } else {
-      setError("CEP inválido");
-      setLogradouro("");
-      setBairro("");
-      setCidade("");
-      setIsFormVisible(false);
-    }
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar CEP:", error);
+        setError("Erro ao buscar CEP. Tente novamente mais tarde.");
+        setLogradouro("");
+        setBairro("");
+        setCidade("");
+        setIsFormVisible(false);
+      });
+  } else {
+    setError("CEP inválido");
+    setLogradouro("");
+    setBairro("");
+    setCidade("");
+    setIsFormVisible(false);
+  }
 
-    setCep(formattedCep);
-  };
+  setCep(formattedCep);
+};
 
   const handleNumeroChange = (event) => {
     const numeroInput = event.target.value;
@@ -110,7 +115,7 @@ export default function PaginaCondominio() {
         numero,
         bairro,
         cidade,
-        fkCliente: sessionStorage.getItem("fkUser"), // Obtém o ID do cliente do sessionStorage
+        fkCliente: sessionStorage.getItem("fkUser"), 
       };
   
       // Fazendo a requisição para a API
@@ -119,19 +124,17 @@ export default function PaginaCondominio() {
         dadosCondominio,
         {
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Passa o token de autenticação
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`, 
           },
         }
       );
   
       console.log("Resposta do servidor:", response);
   
-      // Verifica se o condomínio foi cadastrado com sucesso
       if (response.status === 201) {
-        const condominioId = response.data.id; // Supondo que o ID do condomínio venha na resposta
-        sessionStorage.setItem("condominioId", condominioId); // Armazena o ID no sessionStorage
+        const condominioId = response.data.id; 
+        sessionStorage.setItem("condominioId", condominioId); 
   
-        // Redireciona o usuário para a página de login (ou outra página)
         navigate("/login");
       } else {
         setError("Erro inesperado ao cadastrar condomínio.");

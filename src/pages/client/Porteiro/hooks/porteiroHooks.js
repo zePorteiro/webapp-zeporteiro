@@ -8,7 +8,7 @@ function useCreatePorteiro() {
     mutationFn: async (newPorteiro) => {
       try {
         const fkUser = sessionStorage.getItem('fkUser');
-        const condominioIdProvisorio = fkUser ? Number(fkUser) - 1 : null; // Converte para número e ajusta
+        const condominioIdProvisorio = fkUser ? Number(fkUser) - 1 : null; 
         const response = await axios.post(
           'http://localhost:8080/porteiros',
           {
@@ -28,7 +28,6 @@ function useCreatePorteiro() {
         if (response.status === 201) {
           return response.data;
         } else {
-          // Melhorar o tratamento de erros para retornar uma mensagem mais útil
           throw new Error(`Erro ao criar porteiro: ${response.statusText}`);
         }
       } catch (error) {
@@ -37,11 +36,9 @@ function useCreatePorteiro() {
       }
     },
     onSuccess: () => {
-      // Invalida a query dos porteiros para garantir que os dados mais recentes sejam carregados
       queryClient.invalidateQueries(['porteiros']);
     },
     onError: (error) => {
-      // Lida com o erro, pode incluir uma notificação para o usuário
       console.error('Erro ao criar porteiro:', error);
     },
   });
@@ -120,7 +117,7 @@ function useGetPorteiros() {
     queryFn: async () => {
       try {
         const fkUser = sessionStorage.getItem('fkUser');
-        const condominioIdProvisorio = fkUser ? Number(fkUser) - 1 : null; // Converte para número e ajusta
+        const condominioIdProvisorio = fkUser ? Number(fkUser) - 1 : null; 
         const response = await axios.get(
           `http://localhost:8080/porteiros/condominio/${condominioIdProvisorio}`,
           {

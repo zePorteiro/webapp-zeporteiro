@@ -245,21 +245,26 @@ const TableEntregas = () => {
     ),
     renderTopToolbarCustomActions: ({ table }) => {
       const handleGenerateCSV = () => {
-        const headers = columns.map(col => col.header).join(','); 
-        const rows = fetchedEntregas.map((entrega) => [
-          entrega.tipoEntrega,
-          entrega.dataRecebimentoPorteiro,
-          entrega.dataRecebimentoMorador || '',
-          entrega.recebido ? 'Sim' : 'Não',
-          entrega.apartamento.id,
-          entrega.porteiro.nome,
-        ]);
-    
+        const headers = columns.map(col => col.header).join(',');
+      
+        const rows = fetchedEntregas.map((entrega) => {
+          const porteiroNome = entrega.porteiro ? entrega.porteiro.nome : 'N/A'; // Verificação adicionada
+      
+          return [
+            entrega.tipoEntrega,
+            entrega.dataRecebimentoPorteiro,
+            entrega.dataRecebimentoMorador || '',
+            entrega.recebido ? 'Sim' : 'Não',
+            entrega.apartamento.id,
+            porteiroNome, // Usando a variável com verificação
+          ];
+        });
+      
         const csvContent = [
           headers,
-          ...rows.map(row => row.join(',')), 
-        ].join('\n'); 
-    
+          ...rows.map(row => row.join(',')),
+        ].join('\n');
+      
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -269,6 +274,7 @@ const TableEntregas = () => {
         link.click();
         document.body.removeChild(link);
       };
+      
     
       return (
         <div>

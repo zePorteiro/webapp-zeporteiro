@@ -4,13 +4,11 @@ import axios from "axios";
 // CREATE 
 export function useCreateEntrega() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (newEntrega) => {
       try {
         const token = sessionStorage.getItem('token');
         const fkUser = sessionStorage.getItem('fkUser');
-
         if (!token) {
           throw new Error('Token de autenticação não encontrado');
         }
@@ -18,20 +16,31 @@ export function useCreateEntrega() {
           throw new Error('fkUser não encontrado no sessionStorage');
         }
 
-        console.log('Dados da nova entrega:', newEntrega);
+        const responseApartamento = await axios.get(`http://localhost:8080/apartamentos?numAp=${newEntrega.numAp}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
 
-        const condominioIdProvisorio = Number(fkUser) - 1;
+        const apartamentos = responseApartamento.data;
+        if (!Array.isArray(apartamentos) || apartamentos.length === 0) {
+          throw new Error('Apartamento não encontrado');
+        }
+
+        const apartamento = apartamentos.find(ap => ap.numAp === newEntrega.numAp);
+        if (!apartamento) {
+          throw new Error('Apartamento não encontrado');
+        }
 
         const payload = {
-          condominioId: condominioIdProvisorio,
-          tipoEntrega: newEntrega.tipoEntrega,
-          dataRecebimentoPorteiro: newEntrega.dataRecebimentoPorteiro,
-          fkApartamento: newEntrega.apartamento?.id,
-          porteiroNome: newEntrega.porteiro?.nome,
+          data_recebimento_porteiro: newEntrega.dataRecebimentoPorteiro,
+          fk_apartamento: apartamento.id,
+          fk_porteiro: newEntrega.fkPorteiro,
+          tipo_entrega: newEntrega.tipoEntrega,
         };
 
         console.log('Payload a ser enviado:', payload);
-
         const response = await axios.post(
           'http://localhost:8080/entregas',
           payload,
@@ -70,6 +79,8 @@ export function useCreateEntrega() {
     },
   });
 }
+
+
 
 
 // UPDATE
@@ -143,29 +154,31 @@ export function useGetEntregas() {
     queryKey: ['entregas'],
     queryFn: async () => {
       try {
-        const fkUser = sessionStorage.getItem('fkUser');
+        const token = sessionStorage.getItem('token');
+
         const response = await axios.get(
-          `http://localhost:8080/entregas/`,
+          `http://localhost:8080/entregas`, 
           {
             headers: {
-              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+              Authorization: `Bearer ${token}`, 
             },
           }
         );
 
         if (response.status === 200) {
-          return response.data;
+          return response.data;  
         } else {
           throw new Error('Erro ao buscar entregas');
         }
       } catch (error) {
         console.error('Erro ao buscar entregas:', error);
-        throw error;
+        throw new Error(error.response?.data?.message || 'Erro ao buscar entregas'); // Mensagem de erro mais específica
       }
     },
     onError: (error) => {
-      console.error('Erro ao carregar entregas:', error);
+      console.error('Erro ao carregar entregas:', error.message); 
     },
+    refetchOnWindowFocus: false, 
   });
 }
 
