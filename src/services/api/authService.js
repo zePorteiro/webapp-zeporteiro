@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // Corrigir a importação
-const localHost = 'http://localhost:8080/';
+const localHost = 'http://98.80.93.196:80/api/';
 
 class AuthService {
   async login(email, senha) {

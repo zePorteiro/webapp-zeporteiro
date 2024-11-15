@@ -10,7 +10,7 @@ function useCreatePorteiro() {
         const fkUser = sessionStorage.getItem('fkUser');
         const condominioIdProvisorio = fkUser ? Number(fkUser) - 1 : null; 
         const response = await axios.post(
-          'http://localhost:8080/porteiros',
+          'http://98.80.93.196:80/api/porteiros',
           {
             condominioId: condominioIdProvisorio,
             nome: newPorteiro.nome,
@@ -52,7 +52,7 @@ function useUpdatePorteiro() {
     mutationFn: async (updatedPorteiro) => {
       try {
         const response = await axios.patch(
-          `http://localhost:8080/porteiros/${updatedPorteiro.id}`,
+          `http://98.80.93.196:8080/porteiros/${updatedPorteiro.id}`,
           updatedPorteiro,
           {
             headers: {
@@ -86,7 +86,7 @@ function useDeletePorteiro() {
     mutationFn: async (id) => {
       try {
         const response = await axios.delete(
-          `http://localhost:8080/porteiros/${id}`,
+          `http://98.80.93.196:8080/porteiros/${id}`,
           {
             headers: {
               Authorization: `Bearer ${sessionStorage.getItem('token')}`,
@@ -119,7 +119,7 @@ function useGetPorteiros() {
         const fkUser = sessionStorage.getItem('fkUser');
         const condominioIdProvisorio = fkUser ? Number(fkUser) - 1 : null; 
         const response = await axios.get(
-          `http://localhost:8080/porteiros/condominio/${condominioIdProvisorio}`,
+          `http://98.80.93.196:8080/porteiros/condominio/${condominioIdProvisorio}`,
           {
             headers: {
               Authorization: `Bearer ${sessionStorage.getItem('token')}`,

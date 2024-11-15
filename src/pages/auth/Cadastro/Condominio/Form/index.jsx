@@ -120,7 +120,7 @@ export default function PaginaCondominio() {
   
       // Fazendo a requisição para a API
       const response = await axios.post(
-        "http://localhost:8080/condominios",
+        "http://98.80.93.196:8080/condominios",
         dadosCondominio,
         {
           headers: {

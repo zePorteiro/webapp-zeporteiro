@@ -80,7 +80,7 @@ export default function FormularioCadastro() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/clientes",
+        "http://98.80.93.196:8080/clientes",
         {
           nome,
           email,

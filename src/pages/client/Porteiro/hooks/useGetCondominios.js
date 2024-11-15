@@ -9,7 +9,7 @@ export const useGetCondominios = () => {
       const token = sessionStorage.getItem('token');
       
       try {
-        const response = await axios.get('http://localhost:8080/condominios', {
+        const response = await axios.get('http://98.80.93.196:80/api/condominios', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },

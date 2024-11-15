@@ -16,7 +16,7 @@ export function useCreateEntrega() {
           throw new Error('fkUser não encontrado no sessionStorage');
         }
 
-        const responseApartamento = await axios.get(`http://localhost:8080/apartamentos?numAp=${newEntrega.numAp}`, {
+        const responseApartamento = await axios.get(`http://98.80.93.196:80/api/apartamentos?numAp=${newEntrega.numAp}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ export function useCreateEntrega() {
 
         console.log('Payload a ser enviado:', payload);
         const response = await axios.post(
-          'http://localhost:8080/entregas',
+          'http://98.80.93.196:8080/entregas',
           payload,
           {
             headers: {
@@ -91,7 +91,7 @@ export function useUpdateEntrega() {
     mutationFn: async (updatedEntrega) => {
       try {
         const response = await axios.patch(
-          `http://localhost:8080/entregas/${updatedEntrega.id}`,
+          `http://98.80.93.196:8080/entregas/${updatedEntrega.id}`,
           updatedEntrega,
           {
             headers: {
@@ -124,7 +124,7 @@ export function useDeleteEntrega() {
     mutationFn: async (id) => {
       try {
         const response = await axios.delete(
-          `http://localhost:8080/entregas/${id}`,
+          `http://98.80.93.196:8080/entregas/${id}`,
           {
             headers: {
               Authorization: `Bearer ${sessionStorage.getItem("token")}`,
@@ -157,7 +157,7 @@ export function useGetEntregas() {
         const token = sessionStorage.getItem('token');
 
         const response = await axios.get(
-          `http://localhost:8080/entregas`, 
+          `http://98.80.93.196:8080/entregas`, 
           {
             headers: {
               Authorization: `Bearer ${token}`, 

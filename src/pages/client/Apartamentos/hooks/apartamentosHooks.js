@@ -18,7 +18,7 @@ export function useCreateApartamento() {
                 }
 
                 const response = await axios.post(
-                    `http://localhost:8080/apartamentos/${condominioId}`,
+                    `http://98.80.93.196:80/api/apartamentos/${condominioId}`,
                     apartamento,
                     {
                         headers: {
@@ -85,7 +85,7 @@ export function useGetApartamentos() {
         queryKey: ["apartamentos"],
         queryFn: async () => {
             try {
-                const response = await axios.get(`http://localhost:8080/apartamentos`, {
+                const response = await axios.get(`http://98.80.93.196:8080/apartamentos`, {
                     headers: {
                         Authorization: `Bearer ${sessionStorage.getItem("token")}`,
                     },
@@ -110,7 +110,7 @@ export function useUpdateApartamento() {
         mutationFn: async (apartamento) => {
             try {
                 console.log('Atualizando apartamento:', JSON.stringify(apartamento, null, 2));
-                await axios.put(`http://localhost:8080/apartamentos/${apartamento.id}`, apartamento);
+                await axios.put(`http://98.80.93.196:8080/apartamentos/${apartamento.id}`, apartamento);
             } catch (error) {
                 console.error('Erro ao atualizar apartamento:', error);
                 throw error;
@@ -131,7 +131,7 @@ export function useDeleteApartamento() {
             try {
                 console.log('Deletando apartamento com ID:', id);
 
-                const response = await axios.delete(`http://localhost:8080/apartamentos/${id}`, {
+                const response = await axios.delete(`http://98.80.93.196:8080/apartamentos/${id}`, {
                     headers: {
                         Authorization: `Bearer ${sessionStorage.getItem("token")}`,
                     },

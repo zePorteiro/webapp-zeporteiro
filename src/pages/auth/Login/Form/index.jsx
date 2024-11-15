@@ -56,7 +56,7 @@ const FormularioLogin = () => {
     console.log("Formulário de login submetido.");
 
     try {
-      const response = await axios.post("http://localhost:8080/clientes/login", {
+      const response = await axios.post("http://98.80.93.196:8080/clientes/login", {
         email,
         senha,
       });
