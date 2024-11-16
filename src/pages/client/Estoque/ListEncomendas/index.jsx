@@ -1,11 +1,12 @@
 // TableEntregas.js
 import { useMemo, useState } from "react";
-import { Box, Button, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip, TextField, Grid } from "@mui/material";
+import { Box, Button, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from "@mui/material";
+import TextField from '@mui/material/TextField';
+import { Select, MenuItem } from '@mui/material';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { MRT_EditActionButtons, MaterialReactTable, useMaterialReactTable } from "material-react-table";
-import { useCreateEntrega, useUpdateEntrega, useDeleteEntrega, useGetEntregas } from "./hooks/entregasHooks"; 
-
+import { useCreateEntrega, useUpdateEntrega, useDeleteEntrega, useGetEntregas } from "./hooks/entregasHooks";
 import { validateEntrega } from "./validations";
 
 const TableEntregas = () => {
@@ -14,8 +15,9 @@ const TableEntregas = () => {
   const { mutateAsync: createEntrega, isLoading: isCreatingEntrega } = useCreateEntrega();
   const { mutateAsync: updateEntrega, isLoading: isUpdatingEntrega } = useUpdateEntrega();
   const { mutateAsync: deleteEntrega, isLoading: isDeletingEntrega } = useDeleteEntrega();
-  
+
   const { data: fetchedEntregas = [], isLoading: isLoadingEntregas, isError: isLoadingEntregasError, isFetching: isFetchingEntregas } = useGetEntregas();
+  const { allPorteiros } = useCreateEntrega();
 
   const columns = useMemo(
     () => [
@@ -31,14 +33,26 @@ const TableEntregas = () => {
             tipoEntrega: undefined,
           })),
           InputLabelProps: {
-            shrink: true, 
+            shrink: true,
           },
           InputProps: {
             sx: {
               '& input': {
-                paddingTop: '8px', 
+                paddingTop: '8px',
               },
             },
+            // Adicionando validação de tamanho
+            inputProps: {
+              minLength: 2,
+              maxLength: 300,
+            },
+          },
+          // Validação em tempo real
+          onChange: (e) => {
+            const value = e.target.value;
+            if (value.length > 300) {
+              e.target.value = value.slice(0, 300);
+            }
           },
         },
       },
@@ -55,14 +69,18 @@ const TableEntregas = () => {
             dataRecebimentoPorteiro: undefined,
           })),
           InputLabelProps: {
-            shrink: true, 
+            shrink: true,
           },
           InputProps: {
             sx: {
               '& input': {
-                paddingTop: '8px', 
+                paddingTop: '8px',
               },
             },
+          },
+          // Adiciona validação de data não futura
+          inputProps: {
+            max: new Date().toISOString().split('T')[0], // Define a data máxima como hoje
           },
         },
       },
@@ -75,16 +93,16 @@ const TableEntregas = () => {
         muiEditTextFieldProps: {
           required: false,
           type: 'date',
-          disabled: true,
+          disabled: true, // mantido disabled pois é preenchido apenas na confirmação de recebimento
           error: !!validationErrors?.dataRecebimentoMorador,
           helperText: validationErrors?.dataRecebimentoMorador,
           InputLabelProps: {
-            shrink: true, 
+            shrink: true,
           },
           InputProps: {
             sx: {
               '& input': {
-                paddingTop: '8px', 
+                paddingTop: '8px',
               },
             },
           },
@@ -96,44 +114,74 @@ const TableEntregas = () => {
         muiTableBodyCellProps: {
           sx: { textAlign: 'center' },
         },
+        Cell: ({ cell }) => (
+          <span>
+            {cell.getValue() ? 'Sim' : 'Não'}
+          </span>
+        ),
         muiEditTextFieldProps: {
-          type: 'text',
+          select: false, 
           required: false,
-          disabled: true,
+          disabled: true, 
           error: !!validationErrors?.recebido,
           helperText: validationErrors?.recebido,
+          SelectProps: {
+            native: true,
+          },
+          children: [
+            <option key="" value="">
+              Selecione
+            </option>,
+            <option key="true" value="true">
+              Sim
+            </option>,
+            <option key="false" value="false">
+              Não
+            </option>,
+          ],
         },
       },
       {
-        accessorKey: 'apartamento.id',
-        header: 'Apartamento ID',
+        accessorKey: 'numAp',
+        header: 'Número Apto',
         muiEditTextFieldProps: {
-          type: 'number',
+          type: 'text',
           required: true,
           disabled: false,
-          error: !!validationErrors?.apartamentoId,
-          helperText: validationErrors?.apartamentoId,
+          error: !!validationErrors?.numAp,
+          helperText: validationErrors?.numAp,
           InputLabelProps: {
-            shrink: true, 
+            shrink: true,
+          },
+          inputProps: {
+            pattern: '^[0-9]+$', 
+            inputMode: 'numeric', 
+          },
+          onChange: (e) => {
+            const value = e.target.value.replace(/\D/g, '');
+            e.target.value = value;
           },
         },
+        Cell: ({ cell }) => cell.getValue(),
+        enableSorting: true,
       },
       {
-        accessorKey: 'porteiro.nome',
-        header: 'Nome do Porteiro',
+        accessorKey: 'idPorteiro',  
+        header: 'ID do Porteiro',
         muiEditTextFieldProps: {
-          required: true,
+          type: 'number', 
+          required: true,  
           disabled: false,
-          error: !!validationErrors?.porteiroNome,
-          helperText: validationErrors?.porteiroNome,
+          error: !!validationErrors?.idPorteiro,  
+          helperText: validationErrors?.idPorteiro,  
           InputLabelProps: {
-            shrink: true, 
+            shrink: true,
+          },
+          inputProps: {
+            min: 1,  
           },
         },
-        muiTableBodyCellProps: {
-          sx: { textAlign: 'center' },
-        },
-      },      
+      }       
     ],
     [validationErrors]
   );
@@ -144,17 +192,19 @@ const TableEntregas = () => {
       const entrega = {
         tipoEntrega: values.tipoEntrega,
         dataRecebimentoPorteiro: values.dataRecebimentoPorteiro,
-        apartamento: { id: values.apartamentoId },
-        porteiro: { id: values.porteiroId },
+        dataRecebimentoMorador: values.dataRecebimentoMorador,
+        recebido: values.recebido ?? false,
+        numAp: values.numAp,
+        idPorteiro: values.idPorteiro
       };
-  
+
       await createEntrega(entrega);
       table.setCreatingRow(null);
     } catch (error) {
       console.error('Erro ao criar entrega:', error);
     }
   };
-  
+
   const handleCreateEntregaAction = async ({ values, table }) => {
     const newValidationErrors = validateEntrega(values);
     if (Object.values(newValidationErrors).some((error) => error)) {
@@ -166,17 +216,17 @@ const TableEntregas = () => {
     setValidationErrors({});
     await handleCreateEntrega({ values, table });
   };
-  
+
   const handleSaveEntrega = async ({ values, table }) => {
     const newValidationErrors = validateEntrega(values);
     if (Object.values(newValidationErrors).some((error) => error)) {
-      console.log("Erros de validação:", newValidationErrors); 
+      console.log("Erros de validação:", newValidationErrors);
       setValidationErrors(newValidationErrors);
       return;
     }
     console.log("Validação concluída, iniciando atualização");
     setValidationErrors({});
-    
+
     try {
       await updateEntrega(values);
       table.setEditingRow(null);
@@ -184,7 +234,7 @@ const TableEntregas = () => {
       console.error('Erro ao atualizar entrega:', error);
     }
   };
-  
+
 
   const openDeleteConfirmModal = (row) => {
     if (window.confirm("Tem certeza que deseja excluir essa entrega?")) {
@@ -245,51 +295,57 @@ const TableEntregas = () => {
     ),
     renderTopToolbarCustomActions: ({ table }) => {
       const handleGenerateCSV = () => {
-        const headers = columns.map(col => col.header).join(',');
-      
+
+        const headers = [
+          'Tipo de Entrega',
+          'Data Recebimento Porteiro',
+          'Data Recebimento Morador',
+          'Recebido',
+          'Número do Apartamento',
+          'Nome do Porteiro'
+        ].join(',');
+
         const rows = fetchedEntregas.map((entrega) => {
-          const porteiroNome = entrega.porteiro ? entrega.porteiro.nome : 'N/A'; // Verificação adicionada
-      
+
+          const formatDate = (date) => date ? new Date(date).toLocaleString() : '';
+
           return [
             entrega.tipoEntrega,
-            entrega.dataRecebimentoPorteiro,
-            entrega.dataRecebimentoMorador || '',
+            formatDate(entrega.dataRecebimentoPorteiro),
+            formatDate(entrega.dataRecebimentoMorador),
             entrega.recebido ? 'Sim' : 'Não',
-            entrega.apartamento.id,
-            porteiroNome, // Usando a variável com verificação
-          ];
+            entrega.numAp,
+            entrega.porteiroNome
+          ].join(',');
         });
-      
-        const csvContent = [
-          headers,
-          ...rows.map(row => row.join(',')),
-        ].join('\n');
-      
+
+        const csvContent = [headers, ...rows].join('\n');
+
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
         link.setAttribute('download', 'entregas.csv');
+        link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       };
-      
-    
+
       return (
         <div>
-          <Button 
-            variant="contained" 
-            color="success" 
+          <Button
+            variant="contained"
+            color="success"
             onClick={() => table.setCreatingRow(true)}
-            style={{ marginRight: '8px' }} 
+            style={{ marginRight: '8px' }}
           >
             Adicionar Entrega
           </Button>
-      
-          <Button 
-            variant="contained" 
-            color="success" 
+
+          <Button
+            variant="contained"
+            color="success"
             onClick={handleGenerateCSV}
           >
             Gerar CSV
@@ -300,7 +356,7 @@ const TableEntregas = () => {
     isLoading: isLoadingEntregas,
     isSaving: isCreatingEntrega || isUpdatingEntrega || isDeletingEntrega,
     showAlertBanner: isLoadingEntregasError,
-    showProgressBars: isFetchingEntregas,   
+    showProgressBars: isFetchingEntregas,
   });
 
   return <MaterialReactTable table={table} />;

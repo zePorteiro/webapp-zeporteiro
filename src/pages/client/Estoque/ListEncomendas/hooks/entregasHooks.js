@@ -1,46 +1,39 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-// CREATE 
+// CREATE
 export function useCreateEntrega() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (newEntrega) => {
+      const token = sessionStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+
+      // Log do objeto recebido
+      console.log('Dados recebidos:', newEntrega);
+
+      // Garantindo que o idPorteiro seja um número
+      const idPorteiro = parseInt(newEntrega.idPorteiro);
+      
+      if (!idPorteiro || isNaN(idPorteiro)) {
+        throw new Error('ID do porteiro inválido');
+      }
+
+      const payload = {
+        tipoEntrega: newEntrega.tipoEntrega,
+        dataRecebimentoPorteiro: newEntrega.dataRecebimentoPorteiro,
+        dataRecebimentoMorador: null,
+        recebido: false,
+        numAp: newEntrega.numAp,
+        idPorteiro: idPorteiro 
+      };
+
+      console.log('Payload a ser enviado:', payload);
+
       try {
-        const token = sessionStorage.getItem('token');
-        const fkUser = sessionStorage.getItem('fkUser');
-        if (!token) {
-          throw new Error('Token de autenticação não encontrado');
-        }
-        if (!fkUser) {
-          throw new Error('fkUser não encontrado no sessionStorage');
-        }
-
-        const responseApartamento = await axios.get(`http://localhost:8080/apartamentos?numAp=${newEntrega.numAp}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const apartamentos = responseApartamento.data;
-        if (!Array.isArray(apartamentos) || apartamentos.length === 0) {
-          throw new Error('Apartamento não encontrado');
-        }
-
-        const apartamento = apartamentos.find(ap => ap.numAp === newEntrega.numAp);
-        if (!apartamento) {
-          throw new Error('Apartamento não encontrado');
-        }
-
-        const payload = {
-          data_recebimento_porteiro: newEntrega.dataRecebimentoPorteiro,
-          fk_apartamento: apartamento.id,
-          fk_porteiro: newEntrega.fkPorteiro,
-          tipo_entrega: newEntrega.tipoEntrega,
-        };
-
-        console.log('Payload a ser enviado:', payload);
         const response = await axios.post(
           'http://localhost:8080/entregas',
           payload,
@@ -52,23 +45,18 @@ export function useCreateEntrega() {
           }
         );
 
-        if (response.status === 201) {
-          console.log('Entrega criada com sucesso:', response.data);
-          return response.data;
-        } else {
-          throw new Error(`Erro ao criar entrega: ${response.statusText}`);
-        }
+        console.log('Resposta do servidor:', response.data);
+
+        return response.data;
       } catch (error) {
+        console.error('Erro completo:', error);
+        console.error('Resposta do erro:', error.response?.data);
+        
         if (error.response) {
-          console.error('Erro do servidor:', error.response.data);
-          throw new Error(`Erro ${error.response.status}: ${error.response.data.message || 'Erro desconhecido'}`);
-        } else if (error.request) {
-          console.error('Nenhuma resposta do servidor:', error.request);
-          throw new Error('Nenhuma resposta do servidor');
-        } else {
-          console.error('Erro ao configurar a requisição:', error.message);
-          throw new Error(error.message);
+          const errorMessage = error.response.data.message || 'Erro ao criar entrega';
+          throw new Error(`${errorMessage} (${error.response.status})`);
         }
+        throw new Error('Erro de conexão com o servidor');
       }
     },
     onSuccess: () => {
@@ -79,7 +67,6 @@ export function useCreateEntrega() {
     },
   });
 }
-
 
 
 
@@ -103,20 +90,20 @@ export function useUpdateEntrega() {
         if (response.status === 200) {
           return response.data;
         } else {
-          throw new Error('Erro ao atualizar entrega');
+          throw new Error("Erro ao atualizar entrega");
         }
       } catch (error) {
-        console.error('Erro ao atualizar entrega:', error);
+        console.error("Erro ao atualizar entrega:", error);
         throw error;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['entregas']);
+      queryClient.invalidateQueries(["entregas"]);
     },
   });
 }
 
-// DELETE 
+// DELETE
 export function useDeleteEntrega() {
   const queryClient = useQueryClient();
 
@@ -135,50 +122,80 @@ export function useDeleteEntrega() {
         if (response.status === 204) {
           return true;
         } else {
-          throw new Error('Erro ao deletar entrega');
+          throw new Error("Erro ao deletar entrega");
         }
       } catch (error) {
-        console.error('Erro ao deletar entrega:', error);
+        console.error("Erro ao deletar entrega:", error);
         throw error;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['entregas']);
+      queryClient.invalidateQueries(["entregas"]);
     },
   });
 }
 
-// GET 
+// GET
 export function useGetEntregas() {
   return useQuery({
-    queryKey: ['entregas'],
+    queryKey: ["entregas"],
     queryFn: async () => {
       try {
-        const token = sessionStorage.getItem('token');
-
-        const response = await axios.get(
-          `http://localhost:8080/entregas`, 
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, 
-            },
-          }
-        );
-
-        if (response.status === 200) {
-          return response.data;  
-        } else {
-          throw new Error('Erro ao buscar entregas');
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+          throw new Error("Token de autenticação não encontrado");
         }
+
+        const response = await axios.get(`http://localhost:8080/entregas`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Log para debug
+        console.log('Dados brutos do backend:', response.data);
+
+        // Se não houver dados, retornar array vazio
+        if (!response.data) return [];
+
+        const entregas = response.data.map(entrega => {
+          // Log para debug de cada entrega
+          console.log('Processando entrega:', entrega);
+
+          return {
+            id: entrega.id, // Adicionando o ID
+            tipoEntrega: entrega.tipoEntrega,
+            dataRecebimentoPorteiro: entrega.dataRecebimentoPorteiro,
+            dataRecebimentoMorador: entrega.dataRecebimentoMorador,
+            recebido: entrega.recebido,
+            // Dados do apartamento
+            numAp: entrega.apartamento?.numAp || entrega.numAp, // Tenta ambos os caminhos
+            // Dados do porteiro
+            idPorteiro: entrega.porteiro?.id || entrega.idPorteiro || entrega.fkPorteiro, // Tenta todas as possibilidades
+            nomePorteiro: entrega.porteiro?.nome
+          };
+        });
+
+        // Log das entregas processadas
+        console.log('Entregas processadas:', entregas);
+
+        return entregas;
       } catch (error) {
-        console.error('Erro ao buscar entregas:', error);
-        throw new Error(error.response?.data?.message || 'Erro ao buscar entregas'); // Mensagem de erro mais específica
+        console.error("Erro completo:", error);
+        if (error.response) {
+          throw new Error(
+            `Erro ${error.response.status}: ${error.response.data.message || 'Erro ao buscar entregas'}`
+          );
+        }
+        throw new Error(error.message || "Erro ao buscar entregas");
       }
     },
     onError: (error) => {
-      console.error('Erro ao carregar entregas:', error.message); 
+      console.error("Erro ao carregar entregas:", error.message);
     },
-    refetchOnWindowFocus: false, 
+    refetchOnWindowFocus: false,
+    staleTime: 30000, 
+    cacheTime: 3600000, 
+    retry: 2,
   });
 }
-
