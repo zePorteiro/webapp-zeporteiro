@@ -136,9 +136,6 @@ const TablePorteiros = () => {
           onFocus: () => setValidationErrors((prev) => ({ ...prev, senha: undefined })),
         },
       },
-<<<<<<< HEAD
-    ], [validationErrors]),
-=======
       {
         accessorKey: 'condominioId',
         header: 'Condomínio',
@@ -159,7 +156,6 @@ const TablePorteiros = () => {
         ),
       },
     ], [validationErrors, selectedCondominioId]),
->>>>>>> 2ff53fa5683f1cc42a4329184bdb2913523c9ecb
     data: fetchedPorteiros,
     createDisplayMode: 'modal',
     editDisplayMode: 'modal',
