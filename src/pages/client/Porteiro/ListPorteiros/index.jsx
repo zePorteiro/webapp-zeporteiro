@@ -125,7 +125,7 @@ const TablePorteiros = () => {
         accessorKey: 'condominioId',
         header: 'Condomínio',
         muiEditTextFieldProps: {
-          type: 'number',  // Ensure the input is numeric
+          type: 'number',  
           required: true,
           error: !!validationErrors.condominioId,
           helperText: validationErrors.condominioId,
@@ -133,10 +133,10 @@ const TablePorteiros = () => {
         },
         renderCell: ({ cell }) => (
           <TextField
-            value={selectedCondominioId || ''}  // Use the state for value
+            value={selectedCondominioId || ''}  
             onChange={(e) => setSelectedCondominioId(e.target.value)}
             fullWidth
-            type="number"  // Ensure the input is numeric
+            type="number"
           />
         ),
       },

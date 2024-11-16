@@ -16,15 +16,16 @@ export const validateEntrega = (values) => {
   }
 
 
-  if (!validateRequired(values['apartamento.id'])) {
-    errors['apartamento.id'] = "O ID do apartamento é obrigatório.";
-  } else if (isNaN(values['apartamento.id']) || values['apartamento.id'] <= 0) {
-    errors['apartamento.id'] = "O ID do apartamento deve ser um número positivo.";
+  if (!validateRequired(values.numAp)) {
+    errors.numAp = "O número do apartamento é obrigatório.";
+  } else if (isNaN(values.numAp) || values.numAp <= 0) {
+    errors.numAp = "O número do apartamento deve ser um número positivo.";
   }
 
- 
-  if (!validateRequired(values['porteiro.nome'])) {
-    errors['porteiro.nome'] = "O nome do porteiro é obrigatório.";
+  if (!validateRequired(values.idPorteiro)) {
+    errors.idPorteiro = "O ID do porteiro é obrigatório.";
+  } else if (!Number.isInteger(Number(values.idPorteiro)) || Number(values.idPorteiro) <= 0) {
+    errors.idPorteiro = "O ID do porteiro deve ser um número inteiro positivo.";
   }
 
   return errors;
