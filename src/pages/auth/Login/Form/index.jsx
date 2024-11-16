@@ -62,7 +62,7 @@ const FormularioLogin = () => {
       });
       sessionStorage.setItem("token", response.data.token)
       sessionStorage.setItem("fkUser", response.data.userId)
-
+      sessionStorage.setItem("condominioId", response.data.condominioId)
       console.log("Status HTTP da resposta:", response.status);
       console.log("Response", response);
 

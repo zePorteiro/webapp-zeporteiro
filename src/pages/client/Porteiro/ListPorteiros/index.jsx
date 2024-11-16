@@ -12,7 +12,6 @@ import {
   DialogTitle,
   IconButton,
   Tooltip,
-  TextField,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -30,15 +29,11 @@ const validateForm = (values) => {
   else if (!/^\d{1,9}$/.test(values.rg)) errors.rg = 'RG deve conter apenas números e ter no máximo 9 dígitos';
   if (!values.senha) errors.senha = 'Senha é obrigatória';
   else if (values.senha.length < 6 || values.senha.length > 20) errors.senha = 'Senha deve ter entre 6 e 20 caracteres';
-  if (!values.condominioId) errors.condominioId = 'Condomínio é obrigatório';
   return errors;
 };
 
 const TablePorteiros = () => {
   const [validationErrors, setValidationErrors] = useState({});
-  const [selectedCondominioId, setSelectedCondominioId] = useState('');
-
-  const { data: condominios = [] } = useGetCondominios();
 
   const { mutateAsync: createPorteiro, isPending: isCreatingPorteiro } = useCreatePorteiro();
   const {
@@ -57,7 +52,8 @@ const TablePorteiros = () => {
       return;
     }
     try {
-      await createPorteiro({ ...values, condominioId: Number(selectedCondominioId) });
+      const condominioId = Number(sessionStorage.getItem('condominioId'));
+      await createPorteiro({ ...values, condominioId });
       table.setCreatingRow(null);
     } catch (error) {
       handleError(error);
@@ -71,7 +67,8 @@ const TablePorteiros = () => {
       return;
     }
     try {
-      await updatePorteiro({ ...values, condominioId: Number(selectedCondominioId) });
+      const condominioId = Number(sessionStorage.getItem('condominioId'));
+      await updatePorteiro({ ...values, condominioId });
       table.setEditingRow(null);
     } catch (error) {
       handleError(error);
@@ -94,20 +91,38 @@ const TablePorteiros = () => {
         accessorKey: 'nome',
         header: 'Nome',
         muiEditTextFieldProps: {
+          type: 'text',
           required: true,
           error: !!validationErrors.nome,
           helperText: validationErrors.nome,
           onFocus: () => setValidationErrors((prev) => ({ ...prev, nome: undefined })),
+          onBlur: (event) => {
+            const { value } = event.target;
+            console.log('Nome Value onBlur:', value); // Log de depuração
+            if (!/^[A-Za-z\s]+$/.test(value)) { // Permitir espaços
+              setValidationErrors((prev) => ({ ...prev, nome: 'Nome deve conter apenas letras' }));
+            }
+          },
         },
       },
       {
         accessorKey: 'rg',
         header: 'RG',
         muiEditTextFieldProps: {
+          type: 'text',
+          inputMode: 'numeric',
+          inputProps: { maxLength: 9 },
           required: true,
           error: !!validationErrors.rg,
           helperText: validationErrors.rg,
           onFocus: () => setValidationErrors((prev) => ({ ...prev, rg: undefined })),
+          onBlur: (event) => {
+            const { value } = event.target;
+            console.log('RG Value onBlur:', value); // Log de depuração
+            if (!/^\d{1,9}$/.test(value)) {
+              setValidationErrors((prev) => ({ ...prev, rg: 'RG deve conter apenas números e ter no máximo 9 dígitos' }));
+            }
+          },
         },
       },
       {
@@ -121,26 +136,7 @@ const TablePorteiros = () => {
           onFocus: () => setValidationErrors((prev) => ({ ...prev, senha: undefined })),
         },
       },
-      {
-        accessorKey: 'condominioId',
-        header: 'Condomínio',
-        muiEditTextFieldProps: {
-          type: 'number',  // Ensure the input is numeric
-          required: true,
-          error: !!validationErrors.condominioId,
-          helperText: validationErrors.condominioId,
-          onFocus: () => setValidationErrors((prev) => ({ ...prev, condominioId: undefined })),
-        },
-        renderCell: ({ cell }) => (
-          <TextField
-            value={selectedCondominioId || ''}  // Use the state for value
-            onChange={(e) => setSelectedCondominioId(e.target.value)}
-            fullWidth
-            type="number"  // Ensure the input is numeric
-          />
-        ),
-      },
-    ], [validationErrors, selectedCondominioId]),
+    ], [validationErrors]),
     data: fetchedPorteiros,
     createDisplayMode: 'modal',
     editDisplayMode: 'modal',
@@ -159,12 +155,10 @@ const TablePorteiros = () => {
     },
     onCreatingRowCancel: () => {
       setValidationErrors({});
-      setSelectedCondominioId('');
     },
     onCreatingRowSave: handleCreatePorteiro,
     onEditingRowCancel: () => {
       setValidationErrors({});
-      setSelectedCondominioId('');
     },
     onEditingRowSave: handleSavePorteiro,
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (

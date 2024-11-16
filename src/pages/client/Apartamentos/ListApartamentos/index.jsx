@@ -69,15 +69,6 @@ const TableApartamentos = () => {
           type: 'checkbox',
         },
       },
-      {
-        accessorKey: "condominioId",
-        header: "Condomínio ID",
-        muiTableBodyCellEditTextFieldProps: {
-          required: true,
-          error: !!validationErrors?.condominioId,
-          helperText: validationErrors?.condominioId,
-        },
-      },
     ],
     [validationErrors]
   );
@@ -188,16 +179,6 @@ const TableApartamentos = () => {
               />
             }
             label="Vazio"
-          />
-          <TextField
-            margin="dense"
-            label="Condomínio ID"
-            type="number"
-            fullWidth
-            value={newApartamento.condominioId}
-            onChange={(e) => setNewApartamento({ ...newApartamento, condominioId: e.target.value })}
-            error={!!validationErrors.condominioId}
-            helperText={validationErrors.condominioId}
           />
         </DialogContent>
         <DialogActions>

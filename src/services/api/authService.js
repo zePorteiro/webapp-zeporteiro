@@ -33,6 +33,7 @@ class AuthService {
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('userId');
     sessionStorage.removeItem('fkUser');
+    sessionStorage.removeItem('condominioId');
 
     window.location.href = '/login';
   }
