@@ -136,26 +136,7 @@ const TablePorteiros = () => {
           onFocus: () => setValidationErrors((prev) => ({ ...prev, senha: undefined })),
         },
       },
-      {
-        accessorKey: 'condominioId',
-        header: 'Condomínio',
-        muiEditTextFieldProps: {
-          type: 'number',  
-          required: true,
-          error: !!validationErrors.condominioId,
-          helperText: validationErrors.condominioId,
-          onFocus: () => setValidationErrors((prev) => ({ ...prev, condominioId: undefined })),
-        },
-        renderCell: ({ cell }) => (
-          <TextField
-            value={selectedCondominioId || ''}  
-            onChange={(e) => setSelectedCondominioId(e.target.value)}
-            fullWidth
-            type="number"
-          />
-        ),
-      },
-    ], [validationErrors, selectedCondominioId]),
+      ], [validationErrors]),
     data: fetchedPorteiros,
     createDisplayMode: 'modal',
     editDisplayMode: 'modal',

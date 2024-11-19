@@ -62,9 +62,9 @@ const FormularioLogin = () => {
       });
       sessionStorage.setItem("token", response.data.token)
       sessionStorage.setItem("fkUser", response.data.userId)
-      sessionStorage.setItem("condominioId", response.data.condominioId)
+      sessionStorage.setItem("condominioId", response.data.condominioid); 
       console.log("Status HTTP da resposta:", response.status);
-      console.log("Response", response);
+      console.log("Response", JSON.stringify(response));
 
       if (response.status === 200 || response.status === 201) {
         toast.success("Login realizado com sucesso!");
