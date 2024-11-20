@@ -106,7 +106,7 @@ function useDeletePorteiro() {
         }
       } catch (error) {
         console.error('Erro ao deletar porteiro:', error);
-        throw error;
+        alert('Erro ao deletar porteiro, pois já existe alguma encomenda vinculada a esse porteiro.')
       }
     },
     onSuccess: () => {

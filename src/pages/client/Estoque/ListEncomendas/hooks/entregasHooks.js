@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { toast } from "react-toastify";
+
 
 // CREATE
 export function useCreateEntrega() {
@@ -12,12 +14,8 @@ export function useCreateEntrega() {
         throw new Error('Token de autenticação não encontrado');
       }
 
-      // Log do objeto recebido
-      console.log('Dados recebidos:', newEntrega);
-
       // Garantindo que o idPorteiro seja um número
       const idPorteiro = parseInt(newEntrega.idPorteiro);
-      
       if (!idPorteiro || isNaN(idPorteiro)) {
         throw new Error('ID do porteiro inválido');
       }
@@ -29,10 +27,8 @@ export function useCreateEntrega() {
         dataRecebimentoMorador: null,
         recebido: false,
         numAp: newEntrega.numAp,
-        idPorteiro: idPorteiro 
+        idPorteiro: idPorteiro,
       };
-
-      console.log('Payload a ser enviado:', payload);
 
       try {
         const response = await axios.post(
@@ -52,15 +48,33 @@ export function useCreateEntrega() {
       } catch (error) {
         console.error('Erro completo:', error);
         console.error('Resposta do erro:', error.response?.data);
-        
+
         if (error.response) {
           const errorMessage = error.response.data.message || 'Erro ao criar entrega';
+
+          console.log(errorMessage)
+
+          // Verifica se a mensagem contém palavras-chave específicas
+          if (errorMessage.includes('Apartamento não encontrado')) {
+            alert('Apartamento inválido! Por favor, verifique o número informado.');
+          } else if (errorMessage.includes('Porteiro não encontrado com o ID')) {
+            alert('Porteiro inválido! Por favor, verifique o ID informado.');
+          } else {
+            // Mensagem genérica para outros erros
+            toast.error(errorMessage);
+          }
+
+
           throw new Error(`${errorMessage} (${error.response.status})`);
         }
+
+        // Caso erro de conexão
+        toast.error('Erro de conexão com o servidor');
         throw new Error('Erro de conexão com o servidor');
       }
     },
     onSuccess: () => {
+      toast.success('Entrega criada com sucesso!');
       queryClient.invalidateQueries(['entregas']);
     },
     onError: (error) => {
@@ -68,7 +82,6 @@ export function useCreateEntrega() {
     },
   });
 }
-
 
 
 // UPDATE
@@ -198,8 +211,8 @@ export function useGetEntregas() {
       console.error("Erro ao carregar entregas:", error.message);
     },
     refetchOnWindowFocus: false,
-    staleTime: 30000, 
-    cacheTime: 3600000, 
+    staleTime: 30000,
+    cacheTime: 3600000,
     retry: 2,
   });
 }

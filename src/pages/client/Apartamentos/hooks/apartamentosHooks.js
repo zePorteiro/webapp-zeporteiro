@@ -166,7 +166,7 @@ export function useDeleteApartamento() {
                 }
             } catch (error) {
                 console.error('Erro ao deletar apartamento:', error);
-                throw error;
+                alert('Erro ao deletar apartamento, pois já existe alguma encomenda vinculada a esse apartamento.')
             }
         },
         onMutate: async (id) => {
