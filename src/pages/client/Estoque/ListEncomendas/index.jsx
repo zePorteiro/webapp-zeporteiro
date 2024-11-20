@@ -22,14 +22,14 @@ const TableEntregas = () => {
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'idEntrega',
+        accessorKey: 'id',
         header: 'ID da Entrega',
         muiEditTextFieldProps: {
           type: 'number',
           required: true,
-          disabled: false,
-          error: !!validationErrors?.idPorteiro,
-          helperText: validationErrors?.idPorteiro,
+          disabled: true,
+          error: !!validationErrors?.id,
+          helperText: validationErrors?.id,
           InputLabelProps: {
             shrink: true,
           },

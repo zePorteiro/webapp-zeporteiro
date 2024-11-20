@@ -104,6 +104,22 @@ const TableApartamentos = () => {
     }
   };
 
+  const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
+    const errors = validateApartamento(values);
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    setValidationErrors({});
+    try {
+      await updateApartamento({ ...row.original, ...values });
+      exitEditingMode(); // Fecha o modo de edição
+    } catch (error) {
+      console.error('Erro ao atualizar apartamento:', error);
+    }
+  };
+
   const table = useMaterialReactTable({
     columns,
     data: fetchedApartamentos || [],
@@ -116,6 +132,7 @@ const TableApartamentos = () => {
       }
       : undefined,
     onEditingRowCancel: () => setValidationErrors({}),
+    onEditingRowSave: handleSaveRowEdits,
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip arrow placement="left" title="Editar">

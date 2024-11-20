@@ -109,18 +109,40 @@ export function useUpdateApartamento() {
     return useMutation({
         mutationFn: async (apartamento) => {
             try {
+                const token = sessionStorage.getItem('token');
+                if (!token) {
+                    throw new Error("Token de autorização não encontrado");
+                }
+
                 console.log('Atualizando apartamento:', JSON.stringify(apartamento, null, 2));
-                await axios.put(`http://localhost:8080/apartamentos/${apartamento.id}`, apartamento);
+
+                const response = await axios.put(
+                    `http://localhost:8080/apartamentos/${apartamento.id}`,
+                    apartamento,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                // Verificar a resposta da API
+                console.log('Resposta da atualização:', response.data);
+
+                return response.data; // Retorne a resposta para uso posterior
             } catch (error) {
-                console.error('Erro ao atualizar apartamento:', error);
+                // Captura de erro mais detalhada
+                console.error('Erro ao atualizar apartamento:', error.response || error.message || error);
                 throw error;
             }
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(["apartamentos"]);
+            queryClient.invalidateQueries(['apartamentos']);
         },
     });
 }
+
+
 
 // Hook para deletar apartamento
 export function useDeleteApartamento() {

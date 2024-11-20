@@ -1,16 +1,19 @@
 import React from "react";
-import Style from "../../../assets/ClientPagesStyles";
+import Style from "../../../assets/ClientPagesStyles"; // Verificar o que esse arquivo contém
 import ListaApartamentos from "./ListApartamentos/index";
 import MenuLateral from "../../../components/SideNavbar/index";
-import Titulo from "../../../components/Title/index"
+import Titulo from "../../../components/Title/index";
 
 import { Container, Content, List, TitleDiv } from "./styles";
 
 function Apartamentos() {
   return (
     <Container>
-      <Style />
+      {/* Se Style for um CSS ou Styled Component, certifique-se de importá-lo corretamente */}
+      <Style /> {/* Verifique a função de Style */}
+      
       <MenuLateral />
+      
       <Content>
         <TitleDiv>
           <Titulo texto="Apartamentos" />

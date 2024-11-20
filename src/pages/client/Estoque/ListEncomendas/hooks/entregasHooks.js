@@ -23,6 +23,7 @@ export function useCreateEntrega() {
       }
 
       const payload = {
+        id: newEntrega.id,
         tipoEntrega: newEntrega.tipoEntrega,
         dataRecebimentoPorteiro: newEntrega.dataRecebimentoPorteiro,
         dataRecebimentoMorador: null,
@@ -81,7 +82,7 @@ export function useUpdateEntrega() {
         console.log('Dados recebidos:', updatedEntrega);
 
         const response = await axios.put(
-          `http://localhost:8080/entregas/${updatedEntrega.idEntrega}`,
+          `http://localhost:8080/entregas/${updatedEntrega.id}`,
           updatedEntrega,
           {
             headers: {
