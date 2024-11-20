@@ -22,6 +22,23 @@ const TableEntregas = () => {
   const columns = useMemo(
     () => [
       {
+        accessorKey: 'idEntrega',
+        header: 'ID da Entrega',
+        muiEditTextFieldProps: {
+          type: 'number',
+          required: true,
+          disabled: false,
+          error: !!validationErrors?.idPorteiro,
+          helperText: validationErrors?.idPorteiro,
+          InputLabelProps: {
+            shrink: true,
+          },
+          inputProps: {
+            min: 1,
+          },
+        },
+      },
+      {
         accessorKey: 'tipoEntrega',
         header: 'Tipo de Entrega',
         muiEditTextFieldProps: {
@@ -120,9 +137,9 @@ const TableEntregas = () => {
           </span>
         ),
         muiEditTextFieldProps: {
-          select: false, 
+          select: false,
           required: false,
-          disabled: true, 
+          disabled: true,
           error: !!validationErrors?.recebido,
           helperText: validationErrors?.recebido,
           SelectProps: {
@@ -154,8 +171,8 @@ const TableEntregas = () => {
             shrink: true,
           },
           inputProps: {
-            pattern: '^[0-9]+$', 
-            inputMode: 'numeric', 
+            pattern: '^[0-9]+$',
+            inputMode: 'numeric',
           },
           onChange: (e) => {
             const value = e.target.value.replace(/\D/g, '');
@@ -166,22 +183,22 @@ const TableEntregas = () => {
         enableSorting: true,
       },
       {
-        accessorKey: 'idPorteiro',  
+        accessorKey: 'idPorteiro',
         header: 'ID do Porteiro',
         muiEditTextFieldProps: {
-          type: 'number', 
-          required: true,  
+          type: 'number',
+          required: true,
           disabled: false,
-          error: !!validationErrors?.idPorteiro,  
-          helperText: validationErrors?.idPorteiro,  
+          error: !!validationErrors?.idPorteiro,
+          helperText: validationErrors?.idPorteiro,
           InputLabelProps: {
             shrink: true,
           },
           inputProps: {
-            min: 1,  
+            min: 1,
           },
         },
-      }       
+      }
     ],
     [validationErrors]
   );

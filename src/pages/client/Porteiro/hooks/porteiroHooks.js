@@ -15,7 +15,7 @@ function useCreatePorteiro() {
             condominioId: condominioId,
             nome: newPorteiro.nome,
             rg: newPorteiro.rg,
-            senha: newPorteiro.senha
+            senha: newPorteiro.senha,
           },
           {
             headers: {
@@ -51,8 +51,13 @@ function useUpdatePorteiro() {
   return useMutation({
     mutationFn: async (updatedPorteiro) => {
       try {
-        const response = await axios.patch(
-          `http://localhost:8080/porteiros/${updatedPorteiro.id}`,
+        const condominioId = sessionStorage.getItem('condominioId');
+        const porteiroId = Number(updatedPorteiro.id);
+
+        console.log('Dados recebidos:', updatedPorteiro);
+
+        const response = await axios.put(
+          `http://localhost:8080/porteiros/${condominioId}/${porteiroId}`,
           updatedPorteiro,
           {
             headers: {

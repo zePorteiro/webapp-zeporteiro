@@ -16,7 +16,6 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useCreatePorteiro, useGetPorteiros, useUpdatePorteiro, useDeletePorteiro } from '../hooks/porteiroHooks';
-import { useGetCondominios } from '../hooks/useGetCondominios';
 
 const handleError = (error) => {
   console.error('Error:', error.response ? error.response.data : error.message);
@@ -41,6 +40,7 @@ const TablePorteiros = () => {
     isError: isLoadingPorteirosError,
     isFetching: isFetchingPorteiros,
     isLoading: isLoadingPorteiros,
+    refetch: refetchPorteiros, // Adicionado refetch
   } = useGetPorteiros();
   const { mutateAsync: updatePorteiro, isPending: isUpdatingPorteiro } = useUpdatePorteiro();
   const { mutateAsync: deletePorteiro, isPending: isDeletingPorteiro } = useDeletePorteiro();
@@ -54,6 +54,7 @@ const TablePorteiros = () => {
     try {
       const condominioId = Number(sessionStorage.getItem('condominioId'));
       await createPorteiro({ ...values, condominioId });
+      await refetchPorteiros(); // Recarregar dados após criação
       table.setCreatingRow(null);
     } catch (error) {
       handleError(error);
@@ -69,6 +70,7 @@ const TablePorteiros = () => {
     try {
       const condominioId = Number(sessionStorage.getItem('condominioId'));
       await updatePorteiro({ ...values, condominioId });
+      await refetchPorteiros(); // Recarregar dados após edição
       table.setEditingRow(null);
     } catch (error) {
       handleError(error);
@@ -79,6 +81,7 @@ const TablePorteiros = () => {
     if (window.confirm('Tem certeza que deseja excluir esse porteiro?')) {
       try {
         await deletePorteiro(id);
+        await refetchPorteiros(); // Recarregar dados após exclusão
       } catch (error) {
         handleError(error);
       }
@@ -128,12 +131,30 @@ const TablePorteiros = () => {
       {
         accessorKey: 'senha',
         header: 'Senha',
+        Cell: () => '*******',  // Mostrar '*******' na tabela principal
         muiEditTextFieldProps: {
           type: 'password',
           required: true,
           error: !!validationErrors.senha,
           helperText: validationErrors.senha,
           onFocus: () => setValidationErrors((prev) => ({ ...prev, senha: undefined })),
+        },
+      },
+      {
+        accessorKey: 'id',
+        header: 'ID Porteiro',
+        muiEditTextFieldProps: {
+          type: 'number',
+          required: true,
+          disabled: true,
+          error: !!validationErrors?.id,
+          helperText: validationErrors?.id,
+          InputLabelProps: {
+            shrink: true,
+          },
+          inputProps: {
+            min: 1,
+          },
         },
       },
       ], [validationErrors]),

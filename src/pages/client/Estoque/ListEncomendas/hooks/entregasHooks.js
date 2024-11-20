@@ -77,8 +77,11 @@ export function useUpdateEntrega() {
   return useMutation({
     mutationFn: async (updatedEntrega) => {
       try {
-        const response = await axios.patch(
-          `http://localhost:8080/entregas/${updatedEntrega.id}`,
+
+        console.log('Dados recebidos:', updatedEntrega);
+
+        const response = await axios.put(
+          `http://localhost:8080/entregas/${updatedEntrega.idEntrega}`,
           updatedEntrega,
           {
             headers: {
