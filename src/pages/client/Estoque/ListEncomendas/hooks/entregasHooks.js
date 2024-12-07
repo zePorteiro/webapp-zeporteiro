@@ -28,6 +28,7 @@ export function useCreateEntrega() {
         recebido: false,
         numAp: newEntrega.numAp,
         idPorteiro: idPorteiro,
+        condominioId: sessionStorage.getItem('condominioId'),
       };
 
       try {
@@ -163,7 +164,8 @@ export function useGetEntregas() {
           throw new Error("Token de autenticação não encontrado");
         }
 
-        const response = await axios.get(`http://localhost:8080/entregas`, {
+        const condominioId = sessionStorage.getItem("condominioId");
+        const response = await axios.get(`http://localhost:8080/entregas/condominio/${condominioId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

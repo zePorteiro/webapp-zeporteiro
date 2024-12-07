@@ -85,7 +85,8 @@ export function useGetApartamentos() {
         queryKey: ["apartamentos"],
         queryFn: async () => {
             try {
-                const response = await axios.get(`http://localhost:8080/apartamentos`, {
+                const condominioId = sessionStorage.getItem("condominioId");
+                const response = await axios.get(`http://localhost:8080/apartamentos/condominio/${condominioId}`, {
                     headers: {
                         Authorization: `Bearer ${sessionStorage.getItem("token")}`,
                     },
