@@ -7,11 +7,14 @@ import {
 import {
   Box,
   Button,
+  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
+  TextField,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -33,6 +36,16 @@ const validateForm = (values) => {
 
 const TablePorteiros = () => {
   const [validationErrors, setValidationErrors] = useState({});
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [editingPorteiro, setEditingPorteiro] = useState(null);
+  const [porteiroToDelete, setPorteiroToDelete] = useState(null);
+  const [newPorteiro, setNewPorteiro] = useState({
+    nome: '',
+    rg: '',
+    senha: '',
+  });
 
   const { mutateAsync: createPorteiro, isPending: isCreatingPorteiro } = useCreatePorteiro();
   const {
@@ -40,51 +53,53 @@ const TablePorteiros = () => {
     isError: isLoadingPorteirosError,
     isFetching: isFetchingPorteiros,
     isLoading: isLoadingPorteiros,
-    refetch: refetchPorteiros, // Adicionado refetch
+    refetch: refetchPorteiros,
   } = useGetPorteiros();
   const { mutateAsync: updatePorteiro, isPending: isUpdatingPorteiro } = useUpdatePorteiro();
   const { mutateAsync: deletePorteiro, isPending: isDeletingPorteiro } = useDeletePorteiro();
 
-  const handleCreatePorteiro = async ({ values, table }) => {
-    const errors = validateForm(values);
+  const handleCreatePorteiro = async () => {
+    const errors = validateForm(newPorteiro);
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
     }
     try {
       const condominioId = Number(sessionStorage.getItem('condominioId'));
-      await createPorteiro({ ...values, condominioId });
-      await refetchPorteiros(); // Recarregar dados após criação
-      table.setCreatingRow(null);
+      await createPorteiro({ ...newPorteiro, condominioId });
+      await refetchPorteiros();
+      setOpenCreateModal(false);
     } catch (error) {
       handleError(error);
     }
   };
 
-  const handleSavePorteiro = async ({ values, table }) => {
-    const errors = validateForm(values);
+  const handleEditPorteiro = async () => {
+    const errors = validateForm(editingPorteiro);
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
     }
     try {
       const condominioId = Number(sessionStorage.getItem('condominioId'));
-      await updatePorteiro({ ...values, condominioId });
-      await refetchPorteiros(); // Recarregar dados após edição
-      table.setEditingRow(null);
+      await updatePorteiro({ ...editingPorteiro, condominioId });
+      await refetchPorteiros();
+      setOpenEditModal(false);
+      setEditingPorteiro(null);
     } catch (error) {
       handleError(error);
     }
   };
 
-  const handleDeletePorteiro = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir esse porteiro?')) {
-      try {
-        await deletePorteiro(id);
-        await refetchPorteiros(); // Recarregar dados após exclusão
-      } catch (error) {
-        handleError(error);
-      }
+  const handleDeletePorteiro = async () => {
+    if (!porteiroToDelete) return;
+    try {
+      await deletePorteiro(porteiroToDelete.id);
+      await refetchPorteiros();
+      setOpenDeleteModal(false);
+      setPorteiroToDelete(null);
+    } catch (error) {
+      handleError(error);
     }
   };
 
@@ -101,8 +116,7 @@ const TablePorteiros = () => {
           onFocus: () => setValidationErrors((prev) => ({ ...prev, nome: undefined })),
           onBlur: (event) => {
             const { value } = event.target;
-            console.log('Nome Value onBlur:', value); // Log de depuração
-            if (!/^[A-Za-z\s]+$/.test(value)) { // Permitir espaços
+            if (!/^[A-Za-z\s]+$/.test(value)) {
               setValidationErrors((prev) => ({ ...prev, nome: 'Nome deve conter apenas letras' }));
             }
           },
@@ -121,7 +135,6 @@ const TablePorteiros = () => {
           onFocus: () => setValidationErrors((prev) => ({ ...prev, rg: undefined })),
           onBlur: (event) => {
             const { value } = event.target;
-            console.log('RG Value onBlur:', value); // Log de depuração
             if (!/^\d{1,9}$/.test(value)) {
               setValidationErrors((prev) => ({ ...prev, rg: 'RG deve conter apenas números e ter no máximo 9 dígitos' }));
             }
@@ -131,7 +144,7 @@ const TablePorteiros = () => {
       {
         accessorKey: 'senha',
         header: 'Senha',
-        Cell: () => '*******',  // Mostrar '*******' na tabela principal
+        Cell: () => '*******',
         muiEditTextFieldProps: {
           type: 'password',
           required: true,
@@ -176,47 +189,30 @@ const TablePorteiros = () => {
     },
     onCreatingRowCancel: () => {
       setValidationErrors({});
+      setNewPorteiro({
+        nome: '',
+        rg: '',
+        senha: '',
+      });
     },
-    onCreatingRowSave: handleCreatePorteiro,
     onEditingRowCancel: () => {
       setValidationErrors({});
     },
-    onEditingRowSave: handleSavePorteiro,
-    renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
-      <>
-        <DialogTitle variant="h3">Adicionar Porteiro</DialogTitle>
-        <DialogContent
-          sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
-        >
-          {internalEditComponents}
-        </DialogContent>
-        <DialogActions>
-          <MRT_EditActionButtons variant="text" table={table} row={row} />
-        </DialogActions>
-      </>
-    ),
-    renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
-      <>
-        <DialogTitle variant="h3">Editar Porteiro</DialogTitle>
-        <DialogContent
-          sx={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
-        >
-          {internalEditComponents}
-        </DialogContent>
-        <DialogActions>
-          <MRT_EditActionButtons variant="text" table={table} row={row} />
-        </DialogActions>
-      </>
-    ),
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: 'flex', gap: '1rem' }}>
         <Tooltip title="Edit">
-          <IconButton onClick={() => table.setEditingRow(row)}>
+          <IconButton onClick={() => {
+            setEditingPorteiro(row.original);
+            setOpenEditModal(true);
+          }}>
             <EditIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Delete">
-          <IconButton color="error" onClick={() => handleDeletePorteiro(row.original.id)}>
+          <IconButton color="error" onClick={() => {
+            setPorteiroToDelete(row.original);
+            setOpenDeleteModal(true);
+          }}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
@@ -225,19 +221,219 @@ const TablePorteiros = () => {
     renderTopToolbarCustomActions: ({ table }) => (
       <Button
         variant="contained"
-        color="success" 
+        color="success"
         onClick={() => {
-          table.setCreatingRow(true);
+          // Redefinir newPorteiro ao abrir o modal de criação
+          setNewPorteiro({
+            nome: '',
+            rg: '',
+            senha: '',
+          });
+          setOpenCreateModal(true);
         }}
+        sx={{ backgroundColor: '#294b29' }}
       >
         Adicionar Porteiro
       </Button>
     ),
     isLoading: isLoadingPorteiros,
-    isSaving: isCreatingPorteiro || isUpdatingPorteiro || isDeletingPorteiro,    
+    isSaving: isCreatingPorteiro || isUpdatingPorteiro || isDeletingPorteiro,
   });
 
-  return <MaterialReactTable table={table} />;
+  return (
+    <>
+      <MaterialReactTable table={table} />
+
+      {/* Modal de criação de novo porteiro */}
+      <Dialog open={openCreateModal} onClose={() => setOpenCreateModal(false)} PaperProps={{
+        style: {
+          padding: '20px',
+          borderRadius: '10px',
+          backgroundColor: '#f5f5f5',
+          width: '400px',
+        },
+      }} sx={{
+        '& .MuiDialogTitle-root': {
+          textAlign: 'center',
+          fontWeight: 'bold',
+          fontSize: '24px',
+        },
+        '& .MuiDialogContent-root': {
+          paddingBottom: '20px',
+        },
+      }}>
+        <DialogTitle>Adicionar Novo Porteiro</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Nome"
+            value={newPorteiro.nome}
+            onChange={(e) => setNewPorteiro({ ...newPorteiro, nome: e.target.value })}
+            required
+            error={!!validationErrors.nome}
+            helperText={validationErrors.nome}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="RG"
+            value={newPorteiro.rg}
+            onChange={(e) => setNewPorteiro({ ...newPorteiro, rg: e.target.value })}
+            required
+            error={!!validationErrors.rg}
+            helperText={validationErrors.rg}
+            inputProps={{ maxLength: 9 }}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Senha"
+            value={newPorteiro.senha}
+            onChange={(e) => setNewPorteiro({ ...newPorteiro, senha: e.target.value })}
+            required
+            error={!!validationErrors.senha}
+            helperText={validationErrors.senha}
+            type="password"
+            fullWidth
+            margin="normal"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCreateModal(false)}
+            sx={{
+              color: '#294b29',
+            }}>Cancelar</Button>
+          <Button
+            onClick={handleCreatePorteiro}
+            variant="contained"
+            color="primary"
+            sx={{ backgroundColor: '#294b29',
+              '&:hover': {
+                backgroundColor: '#294b29',
+              },
+             }}
+          >
+            Adicionar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal de edição de porteiro */}
+      <Dialog open={openEditModal} onClose={() => setOpenEditModal(false)} PaperProps={{
+        style: {
+          padding: '20px',
+          borderRadius: '10px',
+          backgroundColor: '#f5f5f5',
+          width: '400px',
+        },
+      }} sx={{
+        '& .MuiDialogTitle-root': {
+          textAlign: 'center',
+          fontWeight: 'bold',
+          fontSize: '24px',
+        },
+        '& .MuiDialogContent-root': {
+          paddingBottom: '20px',
+        },
+      }}>
+        <DialogTitle>Editar Porteiro</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Nome"
+            value={editingPorteiro?.nome || ''}
+            onChange={(e) => setEditingPorteiro({ ...editingPorteiro, nome: e.target.value })}
+            required
+            error={!!validationErrors.nome}
+            helperText={validationErrors.nome}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="RG"
+            value={editingPorteiro?.rg || ''}
+            onChange={(e) => setEditingPorteiro({ ...editingPorteiro, rg: e.target.value })}
+            required
+            error={!!validationErrors.rg}
+            helperText={validationErrors.rg}
+            inputProps={{ maxLength: 9 }}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Senha"
+            value={editingPorteiro?.senha || ''}
+            onChange={(e) => setEditingPorteiro({ ...editingPorteiro, senha: e.target.value })}
+            required
+            error={!!validationErrors.senha}
+            helperText={validationErrors.senha}
+            type="password"
+            fullWidth
+            margin="normal"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenEditModal(false)} sx={{
+            color: '#294b29',
+          }}>Cancelar</Button>
+          <Button
+            onClick={handleEditPorteiro}
+            variant="contained"
+            color="primary"
+            sx={{ backgroundColor: '#294b29',
+              '&:hover': {
+                backgroundColor: '#294b29',
+              },
+             }}
+          >
+            Salvar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal de confirmação de exclusão de porteiro */}
+      <Dialog open={openDeleteModal} onClose={() => setOpenDeleteModal(false)} PaperProps={{
+        style: {
+          padding: '20px',
+          borderRadius: '10px',
+          backgroundColor: '#f5f5f5',
+          width: '400px',
+        },
+      }} sx={{
+        '& .MuiDialogTitle-root': {
+          textAlign: 'center',
+          fontWeight: 'bold',
+          fontSize: '24px',
+        },
+        '& .MuiDialogContent-root': {
+          paddingBottom: '20px',
+        },
+      }}>
+        <DialogTitle>Confirmar Exclusão</DialogTitle>
+        <DialogContent>
+          <Typography>Tem certeza de que deseja excluir o porteiro <strong>{porteiroToDelete?.nome}</strong>?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteModal(false)}
+            sx={{
+              color: '#294b29',
+            }}>Cancelar</Button>
+          <Button
+            onClick={handleDeletePorteiro}
+            variant="contained"
+            color="error"
+            sx={
+              { backgroundColor: '#294b29',
+                '&:hover': {
+                  backgroundColor: '#294b29',
+                },
+               }
+            }
+          >
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
 };
 
 export default TablePorteiros;

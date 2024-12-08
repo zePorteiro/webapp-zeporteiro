@@ -1,6 +1,5 @@
-// TableEntregas.js
 import { useMemo, useState } from "react";
-import { Box, Button, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from "@mui/material";
 import TextField from '@mui/material/TextField';
 import { Select, MenuItem } from '@mui/material';
 import EditIcon from "@mui/icons-material/Edit";
@@ -11,6 +10,8 @@ import { validateEntrega } from "./validations";
 
 const TableEntregas = () => {
   const [validationErrors, setValidationErrors] = useState({});
+  const [openDeleteModal, setOpenDeleteModal] = useState(false); // Controle do modal de exclusão
+  const [selectedEntregaId, setSelectedEntregaId] = useState(null); // ID da entrega a ser excluída
 
   const { mutateAsync: createEntrega, isLoading: isCreatingEntrega } = useCreateEntrega();
   const { mutateAsync: updateEntrega, isLoading: isUpdatingEntrega } = useUpdateEntrega();
@@ -58,13 +59,11 @@ const TableEntregas = () => {
                 paddingTop: '8px',
               },
             },
-            // Adicionando validação de tamanho
             inputProps: {
               minLength: 2,
               maxLength: 300,
             },
           },
-          // Validação em tempo real
           onChange: (e) => {
             const value = e.target.value;
             if (value.length > 300) {
@@ -95,9 +94,8 @@ const TableEntregas = () => {
               },
             },
           },
-          // Adiciona validação de data não futura
           inputProps: {
-            max: new Date().toISOString().split('T')[0], // Define a data máxima como hoje
+            max: new Date().toISOString().split('T')[0],
           },
         },
       },
@@ -110,7 +108,7 @@ const TableEntregas = () => {
         muiEditTextFieldProps: {
           required: false,
           type: 'date',
-          disabled: true, // mantido disabled pois é preenchido apenas na confirmação de recebimento
+          disabled: true,
           error: !!validationErrors?.dataRecebimentoMorador,
           helperText: validationErrors?.dataRecebimentoMorador,
           InputLabelProps: {
@@ -252,11 +250,59 @@ const TableEntregas = () => {
     }
   };
 
+  // Função para abrir o modal de confirmação de exclusão
+  const openDeleteConfirmModal = (rowId) => {
+    setSelectedEntregaId(rowId); // Armazena o ID da entrega que será excluída
+    setOpenDeleteModal(true); // Abre o modal
+  };
 
-  const openDeleteConfirmModal = (row) => {
-    if (window.confirm("Tem certeza que deseja excluir essa entrega?")) {
-      deleteEntrega(row.original.id);
+  // Função para confirmar a exclusão
+  const handleDeleteEntrega = async () => {
+    if (selectedEntregaId) {
+      await deleteEntrega(selectedEntregaId); // Exclui a entrega
+      setOpenDeleteModal(false); // Fecha o modal
     }
+  };
+
+  // Função para fechar o modal sem excluir
+  const handleCloseDeleteModal = () => {
+    setOpenDeleteModal(false);
+  };
+
+  const handleGenerateCSV = () => {
+    const headers = [
+      'Tipo de Entrega',
+      'Data Recebimento Porteiro',
+      'Data Recebimento Morador',
+      'Recebido',
+      'Número do Apartamento',
+      'Nome do Porteiro'
+    ].join(',');
+
+    const rows = fetchedEntregas.map((entrega) => {
+      const formatDate = (date) => date ? new Date(date).toLocaleString() : '';
+
+      return [
+        entrega.tipoEntrega,
+        formatDate(entrega.dataRecebimentoPorteiro),
+        formatDate(entrega.dataRecebimentoMorador),
+        entrega.recebido ? 'Sim' : 'Não',
+        entrega.numAp,
+        entrega.porteiroNome
+      ].join(',');
+    });
+
+    const csvContent = [headers, ...rows].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'entregas.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const table = useMaterialReactTable({
@@ -304,79 +350,86 @@ const TableEntregas = () => {
           </IconButton>
         </Tooltip>
         <Tooltip title="Excluir">
-          <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
+          <IconButton  color="error" onClick={() => openDeleteConfirmModal(row.original.id)}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => {
-      const handleGenerateCSV = () => {
+    renderTopToolbarCustomActions: ({ table }) => (
+      <div>
+        <Button
+          variant="contained"
+          color="success"
+          onClick={() => table.setCreatingRow(true)}
+          style={{ marginRight: '8px' }}
+          sx={{
+            color: 'white',  // Cor do texto personalizada
+            backgroundColor: '#294b29',  // Cor de fundo personalizada
+            '&:hover': {
+              backgroundColor: '#294b26',  // Cor de fundo ao passar o mouse
+            },
+          }}
+        >
+          Adicionar Entrega
+        </Button>
 
-        const headers = [
-          'Tipo de Entrega',
-          'Data Recebimento Porteiro',
-          'Data Recebimento Morador',
-          'Recebido',
-          'Número do Apartamento',
-          'Nome do Porteiro'
-        ].join(',');
-
-        const rows = fetchedEntregas.map((entrega) => {
-
-          const formatDate = (date) => date ? new Date(date).toLocaleString() : '';
-
-          return [
-            entrega.tipoEntrega,
-            formatDate(entrega.dataRecebimentoPorteiro),
-            formatDate(entrega.dataRecebimentoMorador),
-            entrega.recebido ? 'Sim' : 'Não',
-            entrega.numAp,
-            entrega.porteiroNome
-          ].join(',');
-        });
-
-        const csvContent = [headers, ...rows].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'entregas.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      };
-
-      return (
-        <div>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={() => table.setCreatingRow(true)}
-            style={{ marginRight: '8px' }}
-          >
-            Adicionar Entrega
-          </Button>
-
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleGenerateCSV}
-          >
-            Gerar CSV
-          </Button>
-        </div>
-      );
-    },
+        <Button
+          variant="contained"
+          color="success"
+          onClick={handleGenerateCSV}
+          sx={{
+            color: 'white',  // Cor do texto personalizada
+            backgroundColor: '#294b29',  // Cor de fundo personalizada
+            '&:hover': {
+              backgroundColor: '#294b26',  // Cor de fundo ao passar o mouse
+            },
+          }}
+        >
+          Gerar CSV
+        </Button>
+      </div>
+    ),
     isLoading: isLoadingEntregas,
     isSaving: isCreatingEntrega || isUpdatingEntrega || isDeletingEntrega,
     showAlertBanner: isLoadingEntregasError,
     showProgressBars: isFetchingEntregas,
   });
 
-  return <MaterialReactTable table={table} />;
+  return (
+    <>
+      {/* Tabela */}
+      <MaterialReactTable table={table} />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <Dialog open={openDeleteModal} onClose={handleCloseDeleteModal}>
+        <DialogTitle sx={{ marginBottom: 2, fontSize: '25px', fontWeight:'bold' }}>Deseja Confirmar A Exclusão?</DialogTitle>
+        <DialogContent
+        sx={{ marginBottom: 2, fontSize: '16px' }}>
+          <p>Você tem certeza que deseja excluir esta entrega?</p>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteModal} sx={{
+              color: '#294b29',  // Cor do texto personalizada
+            }} color="primary">Cancelar</Button>
+          <Button 
+            onClick={handleDeleteEntrega} 
+            variant="contained" 
+            disabled={isDeletingEntrega}
+            sx={{
+              color: 'white',  // Cor do texto personalizada
+              backgroundColor: '#294b29',  // Cor de fundo personalizada
+              '&:hover': {
+                backgroundColor: '#294b26',  // Cor de fundo ao passar o mouse
+              },
+            }} // Cor do botão personalizada
+          >
+            {isDeletingEntrega ? "Excluindo..." : "Excluir"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
 };
 
 export default TableEntregas;
