@@ -4,8 +4,7 @@ import { Formulario, ErrorPopup, Botao } from "./styles";
 import { CampoInputCadastro, InputCadastro, Label } from "../../Inputs/styles";
 import { useNavigate } from "react-router-dom";
 import { validarCEP, validarNumero, validarPreenchido } from "../../../../../utils/formValidation";
-import { ToastContainer } from "react-toastify"; 
-import 'react-toastify/dist/ReactToastify.css'; 
+import { toast, ToastContainer } from "react-toastify";
 
 export default function PaginaCondominio() {
   const [cep, setCep] = useState("");
@@ -132,11 +131,13 @@ export default function PaginaCondominio() {
       console.log("Resposta do servidor:", response);
   
       if (response.status === 201) {
+        toast.success("Condomínio cadastrado com sucesso!");
         const condominioId = response.data.id; 
         sessionStorage.setItem("condominioId", condominioId); 
   
         navigate("/login");
       } else {
+        toast.error("Erro inesperado ao cadastrar condomínio, contate o suporte.");
         setError("Erro inesperado ao cadastrar condomínio.");
       }
     } catch (error) {

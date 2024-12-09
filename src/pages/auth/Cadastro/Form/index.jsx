@@ -104,7 +104,7 @@ export default function FormularioCadastro() {
       if (error.response && error.response.data && error.response.data.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error("Erro ao cadastrar usuário. Por favor, tente novamente.");
+        toast.error('Erro ao cadastrar usuário. Por favor, tente novamente, caso o erro persista possívelmente o email já esteja sendo utilizado.');
       }
       console.error("Erro ao cadastrar usuário:", error);
     }
